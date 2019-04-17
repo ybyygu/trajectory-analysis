@@ -1,4 +1,6 @@
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::8da0ca06-6b0c-4d1b-8eec-827c7459cf2b][8da0ca06-6b0c-4d1b-8eec-827c7459cf2b]]
+// imports
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
 use std::fs::File;
 use std::error::Error;
 use std::io::{self, BufReader, BufWriter};
@@ -9,12 +11,19 @@ use std::path::Path;
 use petgraph::prelude::*;
 use petgraph as pg;
 
-use atoms::{AtomData, TrajectoryFrame, write_as_cif};
-use ::Frame;
-use graph::fragments_from_atoms;
-// 8da0ca06-6b0c-4d1b-8eec-827c7459cf2b ends here
+use crate::atoms::{AtomData, TrajectoryFrame, write_as_cif};
+use crate::Frame;
+use crate::graph::fragments_from_atoms;
+// imports:1 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::30c60549-db69-4b1b-b0e5-33904c16a8b9][30c60549-db69-4b1b-b0e5-33904c16a8b9]]
+// extract frame structure
+// 提出特定frame对应的结构, 生成cif文件.
+// - 元素信息: symbols
+// - 键连信息: bonds
+// - 结构信息: dump, cell
+
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*extract%20frame%20structure][extract frame structure:1]]
 pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> Result<(), Box<Error>>
 {
     // 1. guess required lammps files from input filename
@@ -52,9 +61,12 @@ pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> R
 
     Ok(())
 }
-// 30c60549-db69-4b1b-b0e5-33904c16a8b9 ends here
+// extract frame structure:1 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::1d1ee6e3-9786-42f5-bc5b-e5542d5e6149][1d1ee6e3-9786-42f5-bc5b-e5542d5e6149]]
+// fragment analysis
+// #+name: 1d1ee6e3-9786-42f5-bc5b-e5542d5e6149
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::1d1ee6e3-9786-42f5-bc5b-e5542d5e6149][1d1ee6e3-9786-42f5-bc5b-e5542d5e6149]]
 pub fn analyze_frames(filename: &str, outfile: &str, maxcols: usize) -> Result<(), Box<Error>>{
     let frames = parse_lammps_files(filename)?;
     write_formated_text(&frames, outfile, maxcols)?;
@@ -63,7 +75,11 @@ pub fn analyze_frames(filename: &str, outfile: &str, maxcols: usize) -> Result<(
 }
 // 1d1ee6e3-9786-42f5-bc5b-e5542d5e6149 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::2085aabc-b09b-4084-88d1-33699881e5e3][2085aabc-b09b-4084-88d1-33699881e5e3]]
+
+
+// #+name: 2085aabc-b09b-4084-88d1-33699881e5e3
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::2085aabc-b09b-4084-88d1-33699881e5e3][2085aabc-b09b-4084-88d1-33699881e5e3]]
 pub fn parse_lammps_files(filename: &str) -> Result<Vec<Frame>, Box<Error>> {
     // 1. guess required lammps files from input filename
     let path = Path::new(filename);
@@ -91,7 +107,11 @@ pub fn parse_lammps_files(filename: &str) -> Result<Vec<Frame>, Box<Error>> {
 }
 // 2085aabc-b09b-4084-88d1-33699881e5e3 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::4540ac95-d7d0-42a2-aef3-bcee0abc5586][4540ac95-d7d0-42a2-aef3-bcee0abc5586]]
+
+
+// #+name: 4540ac95-d7d0-42a2-aef3-bcee0abc5586
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::4540ac95-d7d0-42a2-aef3-bcee0abc5586][4540ac95-d7d0-42a2-aef3-bcee0abc5586]]
 pub fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -> Result<(), Box<Error>>{
     // create output file
     let f = File::create(outfile)?;
@@ -135,7 +155,13 @@ pub fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usiz
 }
 // 4540ac95-d7d0-42a2-aef3-bcee0abc5586 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::1f4bb42e-6c9c-41d1-b9f3-e0908813187a][1f4bb42e-6c9c-41d1-b9f3-e0908813187a]]
+// src
+// - 关键信息: 所有原子对应的元素类型.
+// - 数据类型选择HashMap, key为index, value为元素符号
+
+// #+name: 1f4bb42e-6c9c-41d1-b9f3-e0908813187a
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::1f4bb42e-6c9c-41d1-b9f3-e0908813187a][1f4bb42e-6c9c-41d1-b9f3-e0908813187a]]
 /// read data from lammps .data file
 fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<Error>>
 {
@@ -256,7 +282,9 @@ fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<Err
 }
 // 1f4bb42e-6c9c-41d1-b9f3-e0908813187a ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::52bb7570-33ac-44ae-950b-c7d67d597e76][52bb7570-33ac-44ae-950b-c7d67d597e76]]
+// test
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*test][test:1]]
 #[test]
 #[ignore]
 fn test_parse_data_file() {
@@ -265,9 +293,12 @@ fn test_parse_data_file() {
     let symbols = parse_lammps_data_file(&path);
     println!("{:?}", symbols);
 }
-// 52bb7570-33ac-44ae-950b-c7d67d597e76 ends here
+// test:1 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::daedfe6b-34ed-4dd1-94a2-4e698a00a42c][daedfe6b-34ed-4dd1-94a2-4e698a00a42c]]
+// src
+// #+name: daedfe6b-34ed-4dd1-94a2-4e698a00a42c
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::daedfe6b-34ed-4dd1-94a2-4e698a00a42c][daedfe6b-34ed-4dd1-94a2-4e698a00a42c]]
 fn get_frame_from_lammps_dump_file
     (path: &Path, target_timestep: usize) -> Result<TrajectoryFrame, Box<Error>>
 {
@@ -359,7 +390,10 @@ fn get_frame_from_lammps_dump_file
 }
 // daedfe6b-34ed-4dd1-94a2-4e698a00a42c ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::69313c0d-d969-40b4-a338-ff274407d54d][69313c0d-d969-40b4-a338-ff274407d54d]]
+// tests
+// #+name: 69313c0d-d969-40b4-a338-ff274407d54d
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::69313c0d-d969-40b4-a338-ff274407d54d][69313c0d-d969-40b4-a338-ff274407d54d]]
 #[test]
 #[ignore]
 fn test_parse_lammps_dump_file() {
@@ -371,7 +405,10 @@ fn test_parse_lammps_dump_file() {
 }
 // 69313c0d-d969-40b4-a338-ff274407d54d ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::32374d0e-1d81-4ec0-a8b3-0fb7950a625a][32374d0e-1d81-4ec0-a8b3-0fb7950a625a]]
+// src
+// #+name: 32374d0e-1d81-4ec0-a8b3-0fb7950a625a
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::32374d0e-1d81-4ec0-a8b3-0fb7950a625a][32374d0e-1d81-4ec0-a8b3-0fb7950a625a]]
 use std::f64;
 
 enum BoxStyle {
@@ -463,7 +500,10 @@ fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<Error
 }
 // 32374d0e-1d81-4ec0-a8b3-0fb7950a625a ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::398e563b-0ad5-4845-a5c3-97c115748e74][398e563b-0ad5-4845-a5c3-97c115748e74]]
+// tests
+// #+name: 398e563b-0ad5-4845-a5c3-97c115748e74
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::398e563b-0ad5-4845-a5c3-97c115748e74][398e563b-0ad5-4845-a5c3-97c115748e74]]
 #[test]
 fn test_lammps_box() {
     let box1 = "ITEM: BOX BOUNDS pp pp pp
@@ -525,7 +565,10 @@ fn test_lammps_box() {
 }
 // 398e563b-0ad5-4845-a5c3-97c115748e74 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::dd0f9789-eb7f-492a-aa0d-24a76d346f76][dd0f9789-eb7f-492a-aa0d-24a76d346f76]]
+// src
+// #+name: dd0f9789-eb7f-492a-aa0d-24a76d346f76
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::dd0f9789-eb7f-492a-aa0d-24a76d346f76][dd0f9789-eb7f-492a-aa0d-24a76d346f76]]
 fn get_lammps_dump_positions(txt: &str, natoms: usize) -> Result<HashMap<usize, [f64; 3]>, Box<Error>>{
     let mut lines_iter = txt.lines();
     let prefix = "ITEM: ATOMS";
@@ -571,7 +614,9 @@ fn get_lammps_dump_positions(txt: &str, natoms: usize) -> Result<HashMap<usize, 
 }
 // dd0f9789-eb7f-492a-aa0d-24a76d346f76 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::afe1d362-438a-4e03-939d-50e9eaac21e1][afe1d362-438a-4e03-939d-50e9eaac21e1]]
+// tests
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*tests][tests:1]]
 #[test]
 fn test_parse_dump_positions() {
     let txt = "ITEM: ATOMS id type x y z
@@ -583,8 +628,8 @@ fn test_parse_dump_positions() {
 
     let natoms = 5_usize;
     let positions = get_lammps_dump_positions(&txt, natoms).unwrap();
-    assert_relative_eq!(3.77622, &positions[&1_usize][0], epsilon=1e-4);
-    assert_relative_eq!(0.131493, &positions[&5_usize][2], epsilon=1e-4);
+    assert_relative_eq!(3.77622, positions[&1_usize][0], epsilon=1e-4);
+    assert_relative_eq!(0.131493, positions[&5_usize][2], epsilon=1e-4);
 
     let txt = "ITEM: ATOMS x y z type id
 0.1832399964 1.684999943 3.850500107 1 1
@@ -594,12 +639,15 @@ fn test_parse_dump_positions() {
 0.9467399716 0.4246200025 1.485839963 1 5 ";
 
     let positions = get_lammps_dump_positions(&txt, 5_usize).unwrap();
-    assert_relative_eq!(0.183239996, &positions[&1_usize][0], epsilon=1e-4);
-    assert_relative_eq!(4.906760216, &positions[&2_usize][0], epsilon=1e-4);
+    assert_relative_eq!(0.183239996, positions[&1_usize][0], epsilon=1e-4);
+    assert_relative_eq!(4.906760216, positions[&2_usize][0], epsilon=1e-4);
 }
-// afe1d362-438a-4e03-939d-50e9eaac21e1 ends here
+// tests:1 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::8497df51-3eb3-41fc-a87d-c1688c94c29f][8497df51-3eb3-41fc-a87d-c1688c94c29f]]
+// on file basis
+// #+name: 8497df51-3eb3-41fc-a87d-c1688c94c29f
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::8497df51-3eb3-41fc-a87d-c1688c94c29f][8497df51-3eb3-41fc-a87d-c1688c94c29f]]
 fn get_connectivity_from_terse_bonds_file
     (path: &Path, target_timestep: usize) -> Result<HashMap<usize, Vec<usize>>, Box<Error>>
 {
@@ -664,7 +712,11 @@ fn get_connectivity_from_terse_bonds_file
 }
 // 8497df51-3eb3-41fc-a87d-c1688c94c29f ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::1cb4fcf1-d093-41ce-a011-f88a95c9bf7b][1cb4fcf1-d093-41ce-a011-f88a95c9bf7b]]
+
+
+// #+name: 1cb4fcf1-d093-41ce-a011-f88a95c9bf7b
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::1cb4fcf1-d093-41ce-a011-f88a95c9bf7b][1cb4fcf1-d093-41ce-a011-f88a95c9bf7b]]
 fn parse_terse_bonds_file (path: &Path, symbols: &HashMap<usize, String>)
                            -> Result<Vec<Frame>, Box<Error>>
 {
@@ -698,7 +750,17 @@ fn parse_terse_bonds_file (path: &Path, symbols: &HashMap<usize, String>)
 }
 // 1cb4fcf1-d093-41ce-a011-f88a95c9bf7b ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198][dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198]]
+// on frame basis
+// 读入不同原子对应的电荷及connectivity.
+// 简化版中:
+// - 以行数来定原子index.
+// - 第一列为浮点数, 对应partial charge
+// - 其后几列为与当前原子直接成键的所有原子对应的编号数据. 该数据为键连原子编号与当
+//   前原子编号之差, 即index - current
+
+// #+name: dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198][dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198]]
 fn get_connectivity_from_terse_bonds_file_frame(
     txt: &str,
     natoms: usize) -> Result<HashMap<usize, Vec<usize>>, Box<Error>>
@@ -724,7 +786,11 @@ fn get_connectivity_from_terse_bonds_file_frame(
 }
 // dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::b88e850d-3754-49fe-a0a6-cdf0ba8e2169][b88e850d-3754-49fe-a0a6-cdf0ba8e2169]]
+
+
+// #+name: b88e850d-3754-49fe-a0a6-cdf0ba8e2169
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::b88e850d-3754-49fe-a0a6-cdf0ba8e2169][b88e850d-3754-49fe-a0a6-cdf0ba8e2169]]
 #[test]
 fn test_get_connectivity_from_terse_bonds_frame() {
     let txt = "0.007 8 9 16 896 1017 1016 905 904 120 121 1 112 128
@@ -743,7 +809,11 @@ fn test_get_connectivity_from_terse_bonds_frame() {
 }
 // b88e850d-3754-49fe-a0a6-cdf0ba8e2169 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::5f005858-636b-4d77-aca5-e6be1baca10a][5f005858-636b-4d77-aca5-e6be1baca10a]]
+
+
+// #+name: 5f005858-636b-4d77-aca5-e6be1baca10a
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::5f005858-636b-4d77-aca5-e6be1baca10a][5f005858-636b-4d77-aca5-e6be1baca10a]]
 fn parse_terse_bonds_file_single_frame<I> (
     lines_iter: &mut I,
     symbols: &HashMap<usize, String>) -> Result<Frame, Box<Error>>
@@ -801,7 +871,10 @@ fn parse_terse_bonds_file_single_frame<I> (
 }
 // 5f005858-636b-4d77-aca5-e6be1baca10a ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::39637608-12b2-4724-ac38-cfc5d4f9c990][39637608-12b2-4724-ac38-cfc5d4f9c990]]
+// on line basis
+// #+name: 39637608-12b2-4724-ac38-cfc5d4f9c990
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::39637608-12b2-4724-ac38-cfc5d4f9c990][39637608-12b2-4724-ac38-cfc5d4f9c990]]
 fn parse_terse_bonds_file_single_line(line: &str) -> (f64, Vec<usize>) {
     let mut attrs = line.split_whitespace();
     let first = attrs.nth(0).unwrap();
@@ -812,7 +885,11 @@ fn parse_terse_bonds_file_single_line(line: &str) -> (f64, Vec<usize>) {
 }
 // 39637608-12b2-4724-ac38-cfc5d4f9c990 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::b0d25b51-fbb3-460a-882f-3cdb7c6f6619][b0d25b51-fbb3-460a-882f-3cdb7c6f6619]]
+
+
+// #+name: b0d25b51-fbb3-460a-882f-3cdb7c6f6619
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::b0d25b51-fbb3-460a-882f-3cdb7c6f6619][b0d25b51-fbb3-460a-882f-3cdb7c6f6619]]
 #[test]
 fn test_parse_terse_bonds_line() {
     let s = "0.007 8 9 16 896 1017 1016 905 904 120 121 1 112 128";
@@ -823,7 +900,11 @@ fn test_parse_terse_bonds_line() {
 }
 // b0d25b51-fbb3-460a-882f-3cdb7c6f6619 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::7ea4d968-ef79-438d-8fed-ce109e391554][7ea4d968-ef79-438d-8fed-ce109e391554]]
+// on file basis
+// 处理文件级别的逻辑
+// #+name: 7ea4d968-ef79-438d-8fed-ce109e391554
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::7ea4d968-ef79-438d-8fed-ce109e391554][7ea4d968-ef79-438d-8fed-ce109e391554]]
 /// Parameters
 /// ----------
 /// inputfile: the path of a .bonds file
@@ -866,7 +947,11 @@ fn create_terse_copy_of_lammps_bonds_file
 }
 // 7ea4d968-ef79-438d-8fed-ce109e391554 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2][2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2]]
+// on frame basis
+// 处理轨迹中单一帧
+// #+name: 2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2][2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2]]
 use std::iter::Peekable;
 
 fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, String>
@@ -934,7 +1019,10 @@ fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, S
 // }
 // 2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::db66fa83-96a3-4315-a379-d4a404ce076f][db66fa83-96a3-4315-a379-d4a404ce076f]]
+// 有陨版: 保留连接表, 不保留bond order
+// #+name: db66fa83-96a3-4315-a379-d4a404ce076f
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::db66fa83-96a3-4315-a379-d4a404ce076f][db66fa83-96a3-4315-a379-d4a404ce076f]]
 fn get_terse_line_from_bonds_data_line(line: &str) -> Result<(usize, String), String>{
     if line.starts_with("# ") {
         let msg = format!("incorrect line: {}", line);
@@ -984,7 +1072,10 @@ fn test_terse_line() {
 }
 // db66fa83-96a3-4315-a379-d4a404ce076f ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::772f2307-4bde-47b4-b839-435dabaf5f1a][772f2307-4bde-47b4-b839-435dabaf5f1a]]
+// functions parsing line
+// #+name: 772f2307-4bde-47b4-b839-435dabaf5f1a
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::772f2307-4bde-47b4-b839-435dabaf5f1a][772f2307-4bde-47b4-b839-435dabaf5f1a]]
 fn get_int_data_from_comment_line(line: &str, prefix: &str) -> Result<usize, String> {
     if line.starts_with(prefix) {
         let s = line[prefix.len()..].trim().parse::<usize>();

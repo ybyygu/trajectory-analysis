@@ -1,14 +1,18 @@
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::8da0ca06-6b0c-4d1b-8eec-827c7459cf2b][8da0ca06-6b0c-4d1b-8eec-827c7459cf2b]]
+// imports
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
 use std::collections::HashMap;
 
 use petgraph::prelude::*;
 use petgraph as pg;
 
-use atoms::get_reduced_formula;
-use atoms::AtomData;
-// 8da0ca06-6b0c-4d1b-8eec-827c7459cf2b ends here
+use crate::atoms::get_reduced_formula;
+use crate::atoms::AtomData;
+// imports:1 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::080d17e9-5876-4808-8e5a-a181129da4fd][080d17e9-5876-4808-8e5a-a181129da4fd]]
+// fragments
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*fragments][fragments:1]]
 pub fn fragments_from_atoms(atoms: &Vec<AtomData>) -> HashMap<String, usize>
 {
     let mut graph = Graph::new_undirected();
@@ -45,4 +49,4 @@ pub fn fragments_from_atoms(atoms: &Vec<AtomData>) -> HashMap<String, usize>
 
     counts
 }
-// 080d17e9-5876-4808-8e5a-a181129da4fd ends here
+// fragments:1 ends here

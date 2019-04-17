@@ -1,20 +1,23 @@
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::68b8f3aa-b3f8-43c0-8b4d-c3165b146535][68b8f3aa-b3f8-43c0-8b4d-c3165b146535]]
-extern crate reaxa;
+// imports
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
 #[macro_use]
 extern crate clap;
 
-use std::fs::File;
-use std::error::Error;
-use std::io::{self, BufReader};
-use std::io::prelude::*;
 use std::collections::HashMap;
+use std::error::Error;
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::{self, BufReader};
 use std::path::Path;
 
-use clap::{App, Arg, AppSettings};
-use reaxa::{extract_frame, analyze_frames};
-// 68b8f3aa-b3f8-43c0-8b4d-c3165b146535 ends here
+use clap::{App, AppSettings, Arg};
+use trajectory_analysis::{analyze_frames, extract_frame};
+// imports:1 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::25390ea6-8bf3-4083-a422-f9e628299efc][25390ea6-8bf3-4083-a422-f9e628299efc]]
+// config
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*config][config:1]]
 struct Config {
     inpfile  : Option<String>,
     extract  : bool,
@@ -34,12 +37,14 @@ impl Config {
         }
     }
 }
-// 25390ea6-8bf3-4083-a422-f9e628299efc ends here
+// config:1 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::b8ea57f0-b549-4fa0-ac1a-abf83009009e][b8ea57f0-b549-4fa0-ac1a-abf83009009e]]
+// fn parse_args
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*fn%20parse_args][fn parse_args:1]]
 /// get file name from command line argument
 fn parse_args() -> Result<Config, Box<Error>> {
-    let matches = App::new("reaxa")
+    let matches = App::new("trajectory-analysis")
         .version(crate_version!())
         .author(crate_authors!())
         .about("tools for lammps/reaxff reaction trajectory analysis")
@@ -115,9 +120,11 @@ fn parse_args() -> Result<Config, Box<Error>> {
 
     Ok(config)
 }
-// b8ea57f0-b549-4fa0-ac1a-abf83009009e ends here
+// fn parse_args:1 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::0176a8ca-12d4-4334-9fa5-6093ceddb854][0176a8ca-12d4-4334-9fa5-6093ceddb854]]
+// fn main
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*fn%20main][fn main:1]]
 fn main() {
     let config = parse_args().unwrap();
     let inpfile = config.inpfile.unwrap();
@@ -146,4 +153,4 @@ fn main() {
         }
     }
 }
-// 0176a8ca-12d4-4334-9fa5-6093ceddb854 ends here
+// fn main:1 ends here

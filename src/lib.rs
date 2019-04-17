@@ -1,9 +1,8 @@
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::68b8f3aa-b3f8-43c0-8b4d-c3165b146535][68b8f3aa-b3f8-43c0-8b4d-c3165b146535]]
+// imports
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
 extern crate petgraph;
 extern crate cgmath;
-
-#[macro_use]
-extern crate approx;
 
 mod atoms;
 mod graph;
@@ -11,9 +10,14 @@ mod lammps;
 
 use std::collections::HashMap;
 pub use lammps::{extract_frame, analyze_frames};
-// 68b8f3aa-b3f8-43c0-8b4d-c3165b146535 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/reaction-analysis/reaction-analysis.note::593685c3-b67d-43c2-95f8-c9fc86f6c5f8][593685c3-b67d-43c2-95f8-c9fc86f6c5f8]]
+#[cfg(test)]
+#[macro_use] extern crate approx;
+// imports:1 ends here
+
+// frame
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*frame][frame:1]]
 pub struct Frame {
     pub timestep: usize,
     pub natoms: usize,
@@ -36,4 +40,4 @@ impl Frame {
         }
     }
 }
-// 593685c3-b67d-43c2-95f8-c9fc86f6c5f8 ends here
+// frame:1 ends here
