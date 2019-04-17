@@ -64,23 +64,16 @@ pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> R
 // extract frame structure:1 ends here
 
 // fragment analysis
-// #+name: 1d1ee6e3-9786-42f5-bc5b-e5542d5e6149
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::1d1ee6e3-9786-42f5-bc5b-e5542d5e6149][1d1ee6e3-9786-42f5-bc5b-e5542d5e6149]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*fragment%20analysis][fragment analysis:1]]
 pub fn analyze_frames(filename: &str, outfile: &str, maxcols: usize) -> Result<(), Box<Error>>{
     let frames = parse_lammps_files(filename)?;
     write_formated_text(&frames, outfile, maxcols)?;
 
     Ok(())
 }
-// 1d1ee6e3-9786-42f5-bc5b-e5542d5e6149 ends here
 
-
-
-// #+name: 2085aabc-b09b-4084-88d1-33699881e5e3
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::2085aabc-b09b-4084-88d1-33699881e5e3][2085aabc-b09b-4084-88d1-33699881e5e3]]
-pub fn parse_lammps_files(filename: &str) -> Result<Vec<Frame>, Box<Error>> {
+fn parse_lammps_files(filename: &str) -> Result<Vec<Frame>, Box<Error>> {
     // 1. guess required lammps files from input filename
     let path = Path::new(filename);
     let path_lammps_data = path.with_extension("data");
@@ -105,14 +98,8 @@ pub fn parse_lammps_files(filename: &str) -> Result<Vec<Frame>, Box<Error>> {
 
     frames
 }
-// 2085aabc-b09b-4084-88d1-33699881e5e3 ends here
 
-
-
-// #+name: 4540ac95-d7d0-42a2-aef3-bcee0abc5586
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::4540ac95-d7d0-42a2-aef3-bcee0abc5586][4540ac95-d7d0-42a2-aef3-bcee0abc5586]]
-pub fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -> Result<(), Box<Error>>{
+fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -> Result<(), Box<Error>>{
     // create output file
     let f = File::create(outfile)?;
     let mut writer = BufWriter::new(f);
@@ -153,15 +140,14 @@ pub fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usiz
 
     Ok(())
 }
-// 4540ac95-d7d0-42a2-aef3-bcee0abc5586 ends here
+// fragment analysis:1 ends here
 
 // src
 // - 关键信息: 所有原子对应的元素类型.
 // - 数据类型选择HashMap, key为index, value为元素符号
 
-// #+name: 1f4bb42e-6c9c-41d1-b9f3-e0908813187a
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::1f4bb42e-6c9c-41d1-b9f3-e0908813187a][1f4bb42e-6c9c-41d1-b9f3-e0908813187a]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*src][src:1]]
 /// read data from lammps .data file
 fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<Error>>
 {
@@ -280,7 +266,7 @@ fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<Err
 
     Ok(symbols)
 }
-// 1f4bb42e-6c9c-41d1-b9f3-e0908813187a ends here
+// src:1 ends here
 
 // test
 
@@ -1020,9 +1006,8 @@ fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, S
 // 2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2 ends here
 
 // 有陨版: 保留连接表, 不保留bond order
-// #+name: db66fa83-96a3-4315-a379-d4a404ce076f
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::db66fa83-96a3-4315-a379-d4a404ce076f][db66fa83-96a3-4315-a379-d4a404ce076f]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*%E6%9C%89%E9%99%A8%E7%89%88:%20%E4%BF%9D%E7%95%99%E8%BF%9E%E6%8E%A5%E8%A1%A8,%20%E4%B8%8D%E4%BF%9D%E7%95%99bond%20order][有陨版: 保留连接表, 不保留bond order:1]]
 fn get_terse_line_from_bonds_data_line(line: &str) -> Result<(usize, String), String>{
     if line.starts_with("# ") {
         let msg = format!("incorrect line: {}", line);
@@ -1070,12 +1055,11 @@ fn test_terse_line() {
     assert!(cur == 137);
     assert_eq!(result, "0.025 112 120 1 8 16 128 136");
 }
-// db66fa83-96a3-4315-a379-d4a404ce076f ends here
+// 有陨版: 保留连接表, 不保留bond order:1 ends here
 
 // functions parsing line
-// #+name: 772f2307-4bde-47b4-b839-435dabaf5f1a
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::772f2307-4bde-47b4-b839-435dabaf5f1a][772f2307-4bde-47b4-b839-435dabaf5f1a]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*functions%20parsing%20line][functions parsing line:1]]
 fn get_int_data_from_comment_line(line: &str, prefix: &str) -> Result<usize, String> {
     if line.starts_with(prefix) {
         let s = line[prefix.len()..].trim().parse::<usize>();
@@ -1084,7 +1068,10 @@ fn get_int_data_from_comment_line(line: &str, prefix: &str) -> Result<usize, Str
             Err(why) => return Err(format!("{:?}", why)),
         }
     } else {
-        let msg = format!("Failed to get value {:?} for current frame: {:?}", prefix, line);
+        let msg = format!(
+            "Failed to get value {:?} for current frame: {:?}",
+            prefix, line
+        );
         Err(msg)
     }
 }
@@ -1116,10 +1103,10 @@ fn get_atom_data_from_line(line: &str) -> Result<AtomData, String> {
         match v.parse::<usize>() {
             Ok(v) => {
                 data.index = v;
-            },
+            }
             Err(why) => {
                 return Err(format!("{:?}", why));
-            },
+            }
         }
     } else {
         return Err(error);
@@ -1138,10 +1125,10 @@ fn get_atom_data_from_line(line: &str) -> Result<AtomData, String> {
         match v.parse::<usize>() {
             Ok(v) => {
                 nneighbors = v;
-            },
+            }
             Err(why) => {
                 return Err(format!("{:?}", why));
-            },
+            }
         }
     } else {
         return Err("failed to read number of neighbors.".to_string());
@@ -1155,10 +1142,10 @@ fn get_atom_data_from_line(line: &str) -> Result<AtomData, String> {
                 Ok(v) => {
                     // neighbors.push(v);
                     data.neighbors.push(v);
-                },
+                }
                 Err(why) => {
                     return Err(format!("{:?}", why));
-                },
+                }
             }
         } else {
             return Err(error);
@@ -1170,7 +1157,8 @@ fn get_atom_data_from_line(line: &str) -> Result<AtomData, String> {
 
 #[test]
 fn test_get_atom_data_from_line() {
-    let line = " 121 3 2 301 28 0         0.978         0.978         1.956         2.000        -0.736 ";
+    let line =
+        " 121 3 2 301 28 0         0.978         0.978         1.956         2.000        -0.736 ";
     let r = get_atom_data_from_line(&line);
     assert!(r.is_ok());
     // let (data, _) = r.unwrap();
@@ -1178,4 +1166,4 @@ fn test_get_atom_data_from_line() {
     assert!(data.index == 121);
     assert!(data.symbol == "3");
 }
-// 772f2307-4bde-47b4-b839-435dabaf5f1a ends here
+// functions parsing line:1 ends here

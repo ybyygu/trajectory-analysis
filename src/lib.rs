@@ -4,16 +4,25 @@
 extern crate petgraph;
 extern crate cgmath;
 
+#[cfg(test)]
+#[macro_use] extern crate approx;
+
+use std::collections::HashMap;
+// imports:1 ends here
+
+// mods
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*mods][mods:1]]
 mod atoms;
 mod graph;
 mod lammps;
+// mods:1 ends here
 
-use std::collections::HashMap;
+// exports
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*exports][exports:1]]
 pub use lammps::{extract_frame, analyze_frames};
-
-#[cfg(test)]
-#[macro_use] extern crate approx;
-// imports:1 ends here
+// exports:1 ends here
 
 // frame
 
