@@ -1,0 +1,14 @@
+# cargo
+
+# [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*cargo][cargo:1]]
+[package]
+name = "trajectory-analysis"
+version = "0.1.2"
+authors = ["Wenping Guo <ybyygu@gmail.com>"]
+
+[dependencies]
+petgraph = "*"
+clap = "*"
+approx = "*"
+cgmath = "*"
+# cargo:1 ends here
