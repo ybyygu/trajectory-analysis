@@ -3,14 +3,19 @@
 # [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*cargo][cargo:1]]
 [package]
 name = "trajectory-analysis"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2018"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
 [dependencies]
-petgraph = "0.4"
+petgraph = "*"
 clap = "2"
 cgmath = "0.17"
+structopt = "0.2"
+quicli = "0.4"
+itertools = "0.8"
+gchemol = {git = "https://github.com/ybyygu/gchemol.git", tag="v0.0.30"}
+#gchemol = {path = "/home/ybyygu/Workspace/Programming/gchemol-rs/gchemol/gchemol"}
 
 [dev-dependencies]
 approx = "0.3"

@@ -16,6 +16,12 @@ use std::collections::HashMap;
 mod atoms;
 mod graph;
 mod lammps;
+pub mod xyz;
+
+pub mod common {
+    pub use quicli::prelude::*;
+    pub type Result<T> = ::std::result::Result<T, Error>;
+}
 // mods:1 ends here
 
 // exports
