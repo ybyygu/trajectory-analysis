@@ -18,6 +18,10 @@ struct Cli {
     #[structopt(parse(from_os_str))]
     trjfile: PathBuf,
 
+    /// The output file for final results.
+    #[structopt(parse(from_os_str), short = "o")]
+    outfile: PathBuf,
+
     /// The max rings size to be detected.
     #[structopt(long = "max", short = "m", default_value = "7")]
     maxsize: usize,
@@ -27,12 +31,17 @@ struct Cli {
 }
 
 fn main() -> CliResult {
+    use gchemol::prelude::*;
+
     let args = Cli::from_args();
     args.verbosity.setup_env_logger(&env!("CARGO_PKG_NAME"))?;
 
     use trajectory_analysis::xyz::*;
 
-    count_rings_in_trajectory(args.trjfile, args.maxsize)?;
+    let txt = count_rings_in_trajectory(args.trjfile, args.maxsize)?;
+
+    txt.to_file(&args.outfile)?;
+    println!("Done. Results saved to: {:#?}", args.outfile.display());
 
     Ok(())
 }

@@ -13,6 +13,7 @@ clap = "2"
 cgmath = "0.17"
 structopt = "0.2"
 quicli = "0.4"
+indicatif = "0.11"
 itertools = "0.8"
 gchemol = {git = "https://github.com/ybyygu/gchemol.git", tag="v0.0.30"}
 #gchemol = {path = "/home/ybyygu/Workspace/Programming/gchemol-rs/gchemol/gchemol"}

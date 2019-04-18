@@ -25,11 +25,20 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 
-pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<()> {
-    let f = File::open(path)?;
+use indicatif::ProgressBar;
+
+pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<String> {
+    let f = File::open(&path)?;
     let mut f = BufReader::new(f);
     let mut buf = String::new();
 
+    let mut out = String::new();
+
+    println!("Working on {:?} ...", path.as_ref().display());
+
+    // set up progress bar
+    let metadata = std::fs::metadata(path)?;
+    let bar = ProgressBar::new(metadata.len());
     for iframe in 0.. {
         let _ = f.read_line(&mut buf)?;
         if buf.is_empty() {
@@ -63,17 +72,22 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
         }
         let mut keys: Vec<_> = map.keys().collect();
         keys.sort();
-        if ! keys.is_empty() {
-            println!("frame {:?}", iframe);
+        if !keys.is_empty() {
+            out.push_str(&format!("frame {}\n", iframe));
             for k in keys {
-                println!("{}, {:}", k, map[k]);
+                out.push_str(&format!("{}, {:}\n", k, map[k]));
             }
         }
+
+        // update progress bar
+        bar.inc(buf.len() as u64);
 
         // reset frame buf
         buf.clear();
     }
-    Ok(())
+    bar.finish();
+
+    Ok(out)
 }
 // base:1 ends here
 
