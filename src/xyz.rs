@@ -72,10 +72,12 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
         }
         let mut keys: Vec<_> = map.keys().collect();
         keys.sort();
-        if !keys.is_empty() {
-            out.push_str(&format!("frame {}\n", iframe));
-            for k in keys {
-                out.push_str(&format!("{}, {:}\n", k, map[k]));
+        out.push_str(&format!("frame {}\n", iframe));
+        for k in 3..(max+1) {
+            if let Some(n) = map.get(&k) {
+                out.push_str(&format!("{}, {:}\n", k, n));
+            } else {
+                out.push_str(&format!("{}, {:}\n", k, 0));
             }
         }
 
