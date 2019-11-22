@@ -16,7 +16,10 @@ use std::collections::HashMap;
 mod atoms;
 mod graph;
 mod lammps;
+mod lindermann;
+
 pub mod xyz;
+pub mod lammps_;
 
 pub mod common {
     pub use quicli::prelude::*;

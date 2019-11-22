@@ -43,7 +43,7 @@ impl Config {
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*fn%20parse_args][fn parse_args:1]]
 /// get file name from command line argument
-fn parse_args() -> Result<Config, Box<Error>> {
+fn parse_args() -> Result<Config, Box<dyn Error>> {
     let matches = App::new("trajectory-analysis")
         .version(crate_version!())
         .author(crate_authors!())

@@ -219,7 +219,6 @@ fn test_read_xyz() -> Result<()> {
     // let mol = read_frame(path)?;
 
     let path = "data/8e/0f1aaf-d18d-4893-aa5b-4b3cd736ca99/a.mol2";
-    let path = "/home/ybyygu/a.mol2";
     let mols = gchemol::io::read(path)?;
     let mol = &mols[0];
 
