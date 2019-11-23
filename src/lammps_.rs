@@ -170,7 +170,7 @@ fn read_atoms(input: &str, natoms: usize) -> IResult<&str, HashMap<usize, Lammps
             let mut z: Option<f64> = None;
             let mut n: Option<usize> = None;
             let mut id: Option<usize> = None;
-            for (k, v) in headers.iter().zip(items.iter()) {
+            for (k, v) in headers.iter().zip(items.into_iter()) {
                 match k {
                     &"x" => x = v.parse().ok(),
                     &"y" => y = v.parse().ok(),

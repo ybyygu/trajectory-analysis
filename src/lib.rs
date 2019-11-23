@@ -1,6 +1,7 @@
 // imports
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
+#![feature(seek_convenience)]
 extern crate petgraph;
 extern crate cgmath;
 
@@ -30,7 +31,8 @@ pub mod common {
 // exports
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*exports][exports:1]]
-pub use lammps::{extract_frame, analyze_frames};
+pub use lammps::{analyze_frames, extract_frame};
+pub use lindermann::*;
 // exports:1 ends here
 
 // frame
