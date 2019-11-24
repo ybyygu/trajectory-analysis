@@ -8,12 +8,6 @@ use crate::lammps_::*;
 use guts::prelude::*;
 // imports:1 ends here
 
-// core
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*core][core:1]]
-
-// core:1 ends here
-
 // distances
 // aperiodic
 
@@ -43,12 +37,145 @@ fn calculate_distance_matrix(frame: &LammpsTrajectoryFrame) -> Vec<f64> {
 }
 // distances:1 ends here
 
-// pub
+// com
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*pub][pub:1]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*com][com:1]]
+fn calculate_distances_center_of_mass(frame: &LammpsTrajectoryFrame, settings: &config::Settings) -> Vec<f64> {
+    let natoms = frame.atoms.len();
+    debug!("dm: found {} atoms in frame {}", natoms, frame.timestep);
+
+    let values: Vec<_> = (0..natoms)
+        .map(|i| {
+            // atom id counts from 1
+            let atom = &frame.atoms[&(i + 1)];
+            let xyz = atom.xyz;
+            // type id counts from 1
+            let j = atom.type_id - 1;
+            let data = &settings.atoms[j];
+            (data.mass, xyz)
+        })
+        .collect();
+
+    let coords: Vec<_> = values.iter().map(|(_, xyz)| *xyz).collect();
+    let masses: Vec<_> = values.iter().map(|(w, _)| *w).collect();
+
+    calculate_points_radii(&coords, Some(masses))
+}
+
+/// Return the distance of points to their geometry center.
+fn calculate_points_radii(coords: &[[f64; 3]], weights: Option<Vec<f64>>) -> Vec<f64> {
+    let n = coords.len();
+    let weights = weights.unwrap_or_else(|| vec![1.0; n]);
+    assert_eq!(n, weights.len());
+
+    // calculate the weighted center of points
+    let [x0, y0, z0] = {
+        let wsum: f64 = weights.iter().sum();
+        let com = coords
+            .iter()
+            .zip(weights.into_iter())
+            .fold([0.0; 3], |[acc_x, acc_y, acc_z], ([x, y, z], w)| {
+                [acc_x + w * x, acc_y + w * y, acc_z + w * z]
+            });
+        [com[0] / wsum, com[1] / wsum, com[2] / wsum]
+    };
+
+    dbg!([x0, y0, z0]);
+
+    coords
+        .iter()
+        .map(|[x, y, z]| ((x - x0).powi(2) + (y - y0).powi(2) + (z - z0).powi(2)).sqrt())
+        .collect()
+}
+
+#[test]
+fn test_points_radii() {
+    let points = vec![[0.0; 3]];
+
+    let com = calculate_points_radii(&points, None);
+    assert_eq!(com, vec![0.0]);
+
+    let points = vec![[0.0; 3], [2.0, 0.0, 0.0]];
+
+    let com = calculate_points_radii(&points, None);
+    assert_eq!(com, vec![1.0; 2]);
+
+    let com = calculate_points_radii(&points, Some(vec![1.008, 12.011]));
+    assert_relative_eq!(com[0], 1.845149, epsilon = 1e-4);
+    assert_relative_eq!(com[1], 0.154851, epsilon = 1e-4);
+}
+// com:1 ends here
+
+// config
+// 用于读取原子类型相关数据
+// type => symbol => masses
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*config][config:1]]
+mod config {
+    use guts::config::*;
+    use guts::prelude::*;
+
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    pub(crate) struct Atom {
+        /// Element symbol for this Atom
+        pub symbol: String,
+
+        /// Atomic mass
+        pub mass: f64,
+    }
+
+    #[derive(Deserialize, Serialize, Debug)]
+    /// User defined parameters for atoms
+    pub(crate) struct Settings {
+        /// user defined bond valence paramters
+        pub atoms: Vec<Atom>,
+    }
+
+    impl Default for Settings {
+        fn default() -> Self {
+            let atoms = vec![
+                Atom {
+                    symbol: "H".into(),
+                    mass: 1.008,
+                },
+                Atom {
+                    symbol: "C".into(),
+                    mass: 12.011,
+                },
+            ];
+
+            Settings { atoms }
+        }
+    }
+
+    impl Configure for Settings {}
+
+    pub(crate) fn load_settigns_from_config_file() -> Settings {
+        Settings::load_from_file("lindermann.conf")
+    }
+
+    #[test]
+    fn test_settings() {
+        Settings::default().print_toml();
+    }
+}
+// config:1 ends here
+
+// core
+
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*core][core:1]]
 use indicatif::ProgressBar;
 
-fn lindemann_process_frames(trjfile: &Path, natoms: usize, estimated_nframes: usize) -> Vec<f64> {
+fn lindemann_process_frames(
+    // path to a LAMMPS trajectory file
+    trjfile: &Path,
+    // number of atoms per frame
+    natoms: usize,
+    // estimated number of frames in trajectory file
+    estimated_nframes: usize,
+    // user settings for each atom such as element symbol, mass, etc
+    settings: &config::Settings,
+) -> Vec<(f64, f64)> {
     let frames = parse_lammps_dump_file(trjfile);
     let npairs = {
         let n = natoms as f64;
@@ -56,6 +183,9 @@ fn lindemann_process_frames(trjfile: &Path, natoms: usize, estimated_nframes: us
         m as usize
     };
 
+    let mut average_com = [0.0; 3];
+    // array of mean distances to average center of mass.
+    let mut array_mean_dist_com = vec![0.0; natoms];
     let mut array_mean = vec![0.0; npairs];
     let mut array_delta = vec![0.0; npairs];
     let mut array_var = vec![0.0; npairs];
@@ -66,10 +196,11 @@ fn lindemann_process_frames(trjfile: &Path, natoms: usize, estimated_nframes: us
     for frame in frames {
         nframes += 1.0;
         // dbg!(frame.timestep);
-        let dm = calculate_distance_matrix(&frame);
-        // dbg!(dm.len());
+        let distances1 = calculate_distance_matrix(&frame);
+        let distances2 = calculate_distances_center_of_mass(&frame, settings);
+        // dbg!(distances1.len());
         for i in 0..npairs {
-            let xn = dm[i];
+            let xn = distances1[i];
             let mean = array_mean[i];
             let var = array_var[i];
             let delta = xn - mean;
@@ -80,10 +211,20 @@ fn lindemann_process_frames(trjfile: &Path, natoms: usize, estimated_nframes: us
             array_var[i] = var + delta * (xn - im);
         }
 
+        // calculate mean distance to com
+        for i in 0..natoms {
+            let xn = distances2[i];
+            let mean = array_mean_dist_com[i];
+            let delta = xn - mean;
+            array_mean_dist_com[i] = mean + delta / nframes;
+        }
+
         // update progress bar
         bar.inc(1);
     }
     bar.finish();
+
+    // dbg!(array_mean_dist_com);
 
     let cv_rij: Vec<_> = (0..npairs)
         .into_par_iter()
@@ -97,22 +238,20 @@ fn lindemann_process_frames(trjfile: &Path, natoms: usize, estimated_nframes: us
 
     // start calculate mean over atom pairs
     let pairs: Vec<_> = (0..natoms).combinations(2).collect();
-    let lindermann_indices: Vec<_> = (0..natoms)
-        .into_par_iter()
-        .map(|i| {
+    (0..natoms)
+        .zip(array_mean_dist_com.into_iter())
+        .map(|(i, di)| {
             // find neighbors for atom i in pairs
             let it = pairs
                 .iter()
                 .enumerate()
                 .filter_map(|(k, p)| if p[0] == i || p[1] == i { Some(cv_rij[k]) } else { None });
             let qi = stats::mean(it);
-            qi
+            (di, qi)
         })
-        .collect();
-
-    lindermann_indices
+        .collect()
 }
-// pub:1 ends here
+// core:1 ends here
 
 // quick check
 // 快速读取trajectory文件, 获取原子数和帧数信息?
@@ -161,36 +300,58 @@ fn test_quick_check() {
 // cli
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*cli][cli:1]]
-use structopt::StructOpt;
+pub mod cli {
+    use super::*;
 
-use guts::cli::*;
+    use structopt::StructOpt;
 
-/// Calculate Lindermann indices for LAMMPS trajectory file (.dump)
-///
-/// * Current limitations:
-///
-/// 1. PBC blind (treat as nano-particles)
-/// 2. Required dump fields: x, y, z (Cartesian coordinates)
-///
-#[derive(Debug, StructOpt)]
-struct Cli {
-    /// The trajectory file in xyz format.
-    #[structopt(parse(from_os_str))]
-    trjfile: PathBuf,
-}
+    use guts::cli::*;
+    use guts::config::*;
 
-pub fn lindermann_cli() -> CliResult {
-    let args = Cli::from_args();
+    /// Calculate Lindermann indices for LAMMPS trajectory file (.dump)
+    ///
+    /// * Current limitations:
+    ///
+    /// 1. PBC blind (treat as nano-particles)
+    /// 2. Required dump fields: x, y, z (Cartesian coordinates)
+    ///
+    #[derive(Debug, StructOpt)]
+    struct Cli {
+        /// The trajectory file in xyz format.
+        #[structopt(parse(from_os_str))]
+        trjfile: Option<PathBuf>,
 
-    let (natoms, nframes) = quick_check_natoms_nframes(&args.trjfile)?;
-    let indices = lindemann_process_frames(&args.trjfile, natoms, nframes);
-
-    println!("{:^8}\t{:^18}", "index(i)", "q_i");
-    for (i, qi) in indices.into_iter().enumerate() {
-        println!("{:^8}\t{:^-18.8}", i + 1, qi);
+        /// Prints default configuration for atom type mapping.
+        #[structopt(long = "print", short = "p")]
+        print: bool,
     }
 
-    Ok(())
+    pub fn enter_main() -> CliResult {
+        let args = Cli::from_args();
+
+        if args.print {
+            config::Settings::default().print_toml();
+            return Ok(());
+        }
+
+        if let Some(trjfile) = args.trjfile {
+            let settings = config::load_settigns_from_config_file();
+            let (natoms, nframes) = quick_check_natoms_nframes(&trjfile)?;
+            let indices = lindemann_process_frames(&trjfile, natoms, nframes, &settings);
+
+            println!(
+                "{:^8}\t{:^18}\t{:^18}",
+                "atom index", "distance to com", "lindermann index"
+            );
+            for (i, (di, qi)) in indices.into_iter().enumerate() {
+                println!("{:^8}\t{:^-18.8}\t{:^-18.8}", i + 1, di, qi);
+            }
+        } else {
+            Cli::clap().print_help();
+        }
+
+        Ok(())
+    }
 }
 // cli:1 ends here
 
@@ -204,8 +365,10 @@ fn test_linermann() {
 
     let fname = "tests/files/lammps-test.dump";
     let natoms = 537;
-    let indices = lindemann_process_frames(fname.as_ref(), natoms, 0);
+    let settings = config::Settings::default();
+    let indices = lindemann_process_frames(fname.as_ref(), natoms, 0, &settings);
 
-    assert_relative_eq!(indices[0], 0.01002696, epsilon = 1e-4);
+    let (d0, q0) = indices[0];
+    assert_relative_eq!(q0, 0.01002696, epsilon = 1e-4);
 }
 // test:1 ends here

@@ -32,7 +32,7 @@ pub mod common {
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*exports][exports:1]]
 pub use lammps::{analyze_frames, extract_frame};
-pub use lindermann::*;
+pub use lindermann::cli::enter_main as lindermann_cli;
 // exports:1 ends here
 
 // frame

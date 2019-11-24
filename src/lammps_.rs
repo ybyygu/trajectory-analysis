@@ -23,15 +23,15 @@ pub struct LammpsTrajectoryFrame {
 /// Minimal Atom representation for LAMMPS.
 #[derive(Debug)]
 pub struct LammpsAtom {
-    // Element number
-    pub n: usize,
+    // Atom type id
+    pub type_id: usize,
     // Cartesian coordinates
     pub xyz: [f64; 3],
 }
 
 impl LammpsAtom {
-    pub fn new(n: usize, xyz: [f64; 3]) -> Self {
-        Self { n, xyz }
+    pub fn new(type_id: usize, xyz: [f64; 3]) -> Self {
+        Self { type_id, xyz }
     }
 }
 
@@ -218,7 +218,7 @@ fn test_read_atoms() {
     let (_, m) = read_atoms(txt, 5).unwrap();
     assert_eq!(m.len(), 5);
     assert_eq!(m[&5].xyz[0], -0.209709);
-    assert_eq!(m[&5].n, 3);
+    assert_eq!(m[&5].type_id, 3);
 
     let txt = "ITEM: ATOMS x y z type id
 0.1832399964 1.684999943 3.850500107 1 1
@@ -229,7 +229,7 @@ fn test_read_atoms() {
     let (_, m) = read_atoms(txt, 3).unwrap();
     assert_eq!(m.len(), 3);
     assert_eq!(m[&3].xyz[0], 2.361759901);
-    assert_eq!(m[&3].n, 1);
+    assert_eq!(m[&3].type_id, 1);
 }
 // tests:1 ends here
 
