@@ -17,7 +17,7 @@ use std::collections::HashMap;
 mod atoms;
 mod graph;
 mod lammps;
-mod lindermann;
+mod lindemann;
 
 pub mod xyz;
 pub mod lammps_;
@@ -32,7 +32,7 @@ pub mod common {
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*exports][exports:1]]
 pub use lammps::{analyze_frames, extract_frame};
-pub use lindermann::cli::enter_main as lindermann_cli;
+pub use lindemann::cli::enter_main as lindemann_cli;
 // exports:1 ends here
 
 // frame

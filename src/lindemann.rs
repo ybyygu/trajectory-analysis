@@ -80,8 +80,6 @@ fn calculate_points_radii(coords: &[[f64; 3]], weights: Option<Vec<f64>>) -> Vec
         [com[0] / wsum, com[1] / wsum, com[2] / wsum]
     };
 
-    dbg!([x0, y0, z0]);
-
     coords
         .iter()
         .map(|[x, y, z]| ((x - x0).powi(2) + (y - y0).powi(2) + (z - z0).powi(2)).sqrt())
@@ -151,7 +149,7 @@ mod config {
     impl Configure for Settings {}
 
     pub(crate) fn load_settigns_from_config_file() -> Settings {
-        Settings::load_from_file("lindermann.conf")
+        Settings::load_from_file("lindemann.conf")
     }
 
     #[test]
@@ -308,7 +306,7 @@ pub mod cli {
     use guts::cli::*;
     use guts::config::*;
 
-    /// Calculate Lindermann indices for LAMMPS trajectory file (.dump)
+    /// Calculate Lindemann indices for LAMMPS trajectory file (.dump)
     ///
     /// * Current limitations:
     ///
@@ -341,7 +339,7 @@ pub mod cli {
 
             println!(
                 "{:^8}\t{:^18}\t{:^18}",
-                "atom index", "distance to com", "lindermann index"
+                "atom index", "distance to com", "lindemann index"
             );
             for (i, (di, qi)) in indices.into_iter().enumerate() {
                 println!("{:^8}\t{:^-18.8}\t{:^-18.8}", i + 1, di, qi);

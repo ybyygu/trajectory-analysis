@@ -8,6 +8,6 @@ use guts::cli::*;
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*cmdline][cmdline:1]]
 fn main() -> CliResult {
-    trajectory_analysis::lindermann_cli()
+    trajectory_analysis::lindemann_cli()
 }
 // cmdline:1 ends here
