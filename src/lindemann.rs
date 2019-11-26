@@ -190,7 +190,8 @@ fn lindemann_process_frames(
     let mut nframes: f64 = 0.0;
 
     // setup progress bar
-    let bar = ProgressBar::new(estimated_nframes as u64);
+    let bar = ProgressBar::new(estimated_nframes as u64)
+        .with_style(indicatif::ProgressStyle::default_bar().progress_chars("#>-"));
     for frame in frames {
         nframes += 1.0;
         // dbg!(frame.timestep);

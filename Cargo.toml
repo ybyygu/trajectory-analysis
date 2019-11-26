@@ -15,7 +15,7 @@ structopt = "0.2"
 quicli = "0.4"                  # TODO: remove
 cgmath = "0.17"                 # TODO: remove
 clap = "2"
-indicatif = "0.11"
+indicatif = "0.13"
 itertools = "0.8"
 streaming-stats = "0.2"
 gchemol = {git = "https://github.com/ybyygu/gchemol.git", tag="v0.0.34"}
