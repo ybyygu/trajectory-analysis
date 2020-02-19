@@ -11,8 +11,8 @@
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
 use std::path::Path;
 
-use gchemol::prelude::*;
-use gchemol::Molecule;
+use gchemol_old::prelude::*;
+use gchemol_old::Molecule;
 
 use crate::common::*;
 // imports:1 ends here
@@ -95,7 +95,7 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
 
 // entry/find rings
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*entry/find%20rings][entry/find rings:1]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*entry/find rings][entry/find rings:1]]
 use std::collections::HashSet;
 
 pub type Rings = Vec<HashSet<AtomIndex>>;
@@ -120,7 +120,7 @@ impl FindRings for Molecule {
 // core
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*core][core:1]]
-use gchemol::AtomIndex;
+use gchemol_old::AtomIndex;
 use itertools::Itertools;
 
 pub(crate) fn find_rings(mol: &Molecule, max_ring_size: usize) -> Rings {
@@ -219,7 +219,7 @@ fn test_read_xyz() -> Result<()> {
     // let mol = read_frame(path)?;
 
     let path = "data/8e/0f1aaf-d18d-4893-aa5b-4b3cd736ca99/a.mol2";
-    let mols = gchemol::io::read(path)?;
+    let mols = gchemol_old::io::read(path)?;
     let mol = &mols[0];
 
     // output in NGPH for test against vitroid/CountRings

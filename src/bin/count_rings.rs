@@ -31,7 +31,7 @@ struct Cli {
 }
 
 fn main() -> CliResult {
-    use gchemol::prelude::*;
+    use gchemol_old::prelude::*;
 
     let args = Cli::from_args();
     args.verbosity.setup_env_logger(&env!("CARGO_PKG_NAME"))?;

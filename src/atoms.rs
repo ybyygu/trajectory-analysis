@@ -372,9 +372,9 @@ fn test_wirte_cif() {
 }
 // tests:1 ends here
 
-// 定义最简单的原子结构信息.
+// atom basis
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*%E5%AE%9A%E4%B9%89%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E5%8E%9F%E5%AD%90%E7%BB%93%E6%9E%84%E4%BF%A1%E6%81%AF.][定义最简单的原子结构信息.:1]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*atom basis][atom basis:1]]
 use std::hash::{Hash, Hasher};
 use std::cmp::Ordering;
 
@@ -437,12 +437,11 @@ fn test_atom() {
     c.symbol = "C";
     assert!(c.symbol == "C");
 }
-// 定义最简单的原子结构信息.:1 ends here
+// atom basis:1 ends here
 
 // from symbols to formula
-// 实现从元素符号列表到分子式.
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*from%20symbols%20to%20formula][from symbols to formula:1]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*from symbols to formula][from symbols to formula:1]]
 // it is better to use generics function,
 // but it is really difficult for me now
 pub fn get_reduced_formula(symbols: &[&str]) -> String {

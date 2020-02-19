@@ -5,7 +5,13 @@ use std::path::Path;
 use std::collections::HashMap;
 
 use guts::prelude::*;
-use text_parser::*;
+use text_parser::parsers::*;
+
+// FIXME: remove
+use text_parser::TextParser;
+
+// FIXME: remove
+use nom::{named, tag, do_parse, IResult, many_m_n};
 // imports:1 ends here
 
 // core
@@ -255,6 +261,8 @@ fn read_lammps_dump_frame(input: &str) -> IResult<&str, LammpsTrajectoryFrame> {
 #[test]
 fn test_parser() -> Result<()> {
     let fname = "tests/files/lammps-test.dump";
+
+    // FIXME: update
     let parser = TextParser::default();
     let frames: Vec<_> = parser.parse_file(fname, read_lammps_dump_frame).collect();
     assert_eq!(frames.len(), 3);
@@ -268,6 +276,7 @@ fn test_parser() -> Result<()> {
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*pub][pub:1]]
 /// Parse LAMMPS trajectory file (.dump), returning a list of frames.
 pub fn parse_lammps_dump_file(trjfile: &Path) -> impl Iterator<Item = LammpsTrajectoryFrame> + '_ {
+    // FIXME: update
     let parser = TextParser::default();
     parser.parse_file(trjfile, read_lammps_dump_frame)
 }
