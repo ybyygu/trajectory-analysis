@@ -1,6 +1,4 @@
-# cargo
-
-# [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*cargo][cargo:1]]
+# [[file:trajectory.note::*cargo][cargo:1]]
 [package]
 name = "trajectory-analysis"
 version = "0.1.6"
@@ -13,17 +11,17 @@ clap = "2"
 indicatif = "0.13"
 streaming-stats = "0.2"
 text-parser = { version = "0.1.1", package = "gchemol-parser" }
-guts = { version = "0.1", package="gchemol-gut" }
-gchemol = { version = "0.0.40", features=["adhoc"]}
+gut = { version = "0.1", package="gchemol-gut" }
+vecfx = { version = "0.1", features= ["nalgebra"] }
+gchemol = { version = ">=0.0.41", features=["adhoc"]}
 
-# TODO: remove
+# TODO: remove below
 itertools = "0.8"
 petgraph = "0.5"
-gchemol_old = {git = "https://github.com/ybyygu/gchemol.git", package="gchemol"}
 structopt = "0.2"
+gchemol_old = {git = "https://github.com/ybyygu/gchemol.git", package="gchemol"}
 quicli = "0.4"                  # TODO: remove
 cgmath = "0.17"                 # TODO: remove
-
 
 [dev-dependencies]
 approx = "0.3"

@@ -1,25 +1,20 @@
-// header
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*header][header:1]]
+// [[file:../trajectory.note::*header][header:1]]
 /// Credit:
 ///
 /// Heavily inspired by the codes developed by vitroid: https://github.com/vitroid/CountRings
 // header:1 ends here
 
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
+// [[file:../trajectory.note::*imports][imports:1]]
 use std::path::Path;
 
 use gchemol_old::prelude::*;
 use gchemol_old::Molecule;
 
-use crate::common::*;
+use quicli::prelude::*;
+type Result<T> = ::std::result::Result<T, Error>;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*base][base:1]]
+// [[file:../trajectory.note::*base][base:1]]
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -93,9 +88,7 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
 }
 // base:1 ends here
 
-// entry/find rings
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*entry/find rings][entry/find rings:1]]
+// [[file:../trajectory.note::*entry/find rings][entry/find rings:1]]
 use std::collections::HashSet;
 
 pub type Rings = Vec<HashSet<AtomIndex>>;
@@ -117,9 +110,7 @@ impl FindRings for Molecule {
 }
 // entry/find rings:1 ends here
 
-// core
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*core][core:1]]
+// [[file:../trajectory.note::*core][core:1]]
 use gchemol_old::AtomIndex;
 use itertools::Itertools;
 
@@ -210,9 +201,7 @@ fn shortest_pathlen(mol: &Molecule, i: AtomIndex, j: AtomIndex) -> usize {
 }
 // core:1 ends here
 
-// tests
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*tests][tests:1]]
+// [[file:../trajectory.note::*tests][tests:1]]
 #[test]
 fn test_read_xyz() -> Result<()> {
     // let path = "./test-files/nanoreactor/90ps~101ps.xyz";
