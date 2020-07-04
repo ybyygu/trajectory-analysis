@@ -8,7 +8,7 @@ use std::collections::HashMap;
 // imports:1 ends here
 
 // [[file:../trajectory.note::*mods][mods:1]]
-mod adhoc;
+pub mod adhoc;
 mod atoms;
 mod graph;
 mod lammps;
