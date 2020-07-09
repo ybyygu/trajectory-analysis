@@ -84,6 +84,10 @@ struct Cli {
     trjfile: std::path::PathBuf,
     /// Variables for calculation in json format.
     json_file: std::path::PathBuf,
+
+    /// plot using plotly
+    #[structopt(long, short)]
+    plot: bool,
 }
 
 pub fn cli() -> Result<()> {
@@ -108,10 +112,23 @@ pub fn cli() -> Result<()> {
     let (d_lower, d_upper) = vars.d_range;
     let (l_lower, l_upper) = vars.l_range;
     let w = vars.w;
-    for x in 0..=vars.n_grid {
-        for y in 0..vars.n_grid {
-            let d = d_lower + (d_upper - d_lower) * (x as f64) / (vars.n_grid as f64);
-            let l = l_lower + (l_upper - l_lower) * (y as f64) / (vars.n_grid as f64);
+    let mut zz = vec![];
+
+    let ng = vars.n_grid;
+    let xx: Vec<_> = (0..=ng)
+        .map(|i| d_lower + (d_upper - d_lower) * (i as f64) / (ng as f64))
+        .collect();
+    let yy: Vec<_> = (0..=ng)
+        .map(|i| l_lower + (l_upper - l_lower) * (i as f64) / (ng as f64))
+        .collect();
+
+    for i in 0..=ng {
+        let mut zi = vec![];
+        for j in 0..ng {
+            // let d = d_lower + (d_upper - d_lower) * (i as f64) / (vars.n_grid as f64);
+            // let l = l_lower + (l_upper - l_lower) * (j as f64) / (vars.n_grid as f64);
+            let d = xx[i];
+            let l = yy[j];
 
             // calculate free energy etc
             let mut sum = 0.0;
@@ -123,8 +140,12 @@ pub fn cli() -> Result<()> {
             let a = w / (n * m * std::f64::consts::PI);
             let pdl = a * sum;
             println!("{:-10.4} {:-10.4} {:-10.4}", d, l, pdl);
+            zi.push(pdl);
         }
+        zz.push(zi);
     }
+
+    plot_3d(zz, xx, yy);
 
     Ok(())
 }
@@ -176,6 +197,25 @@ fn calculate_proton_diffusion_distribution(mol: &Molecule, w: f64, d: f64, lambd
     inner_sum
 }
 // cli:1 ends here
+
+// [[file:../trajectory.note::*plot][plot:1]]
+fn plot_3d(z: Vec<Vec<f64>>, x: Vec<f64>, y: Vec<f64>) {
+    use plotly::*;
+    use plotly::layout::Axis;
+
+    let mut plot = Plot::new();
+
+    // layout tuning
+    // let xaxis = Axis::new().tick_format("-0.2f");
+    // let yaxis = Axis::new().tick_format("-0.2f");
+    // let layout = Layout::new().xaxis(xaxis).yaxis(yaxis);
+    // plot.set_layout(layout);
+
+    let trace1 = Surface::new(z).x(x).y(y).cauto(false);
+    plot.add_trace(trace1);
+    plot.show();
+}
+// plot:1 ends here
 
 // [[file:../trajectory.note::*test][test:1]]
 #[test]

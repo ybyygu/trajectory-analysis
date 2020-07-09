@@ -16,6 +16,7 @@ text-parser = { version = "0.1.1", package = "gchemol-parser" }
 gut = { version = "0.1", package="gchemol-gut" }
 vecfx = { version = "0.1", features= ["nalgebra"] }
 gchemol = { version = ">=0.0.41", features=["adhoc"]}
+plotly = "0.4.1"
 # structopt_ = { version = "0.3", package="structopt" }
 
 # TODO: remove below
