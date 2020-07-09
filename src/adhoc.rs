@@ -142,24 +142,33 @@ fn calculate_proton_diffusion_distribution(mol: &Molecule, w: f64, d: f64, lambd
         let a_o_g = mol.get_atom(o_g).unwrap();
         let a_h1 = mol.get_atom(h1).unwrap();
         let a_h2 = mol.get_atom(h2).unwrap();
-        let d1 = a_o_g.distance(a_h1);
-        let d2 = a_o_g.distance(a_h2);
-        let (d_o_g_h, a_h) = if d1 < d2 { (d1, a_h1) } else { (d2, a_h2) };
 
         // 只选择距离气相O最近的那个表面O原子
         let mut d_ij = std::f64::MAX;
-        let mut lambda_ij = std::f64::MAX;
         let mut o_s_min = 0;
         for &o_s in o_atoms_surface.iter() {
             let a_o_s = mol.get_atom(o_s).unwrap();
             let d_ij_ = a_o_g.distance(a_o_s);
             if d_ij_ < d_ij {
                 d_ij = d_ij_;
-                let d_o_s_h = a_o_s.distance(a_h);
-                lambda_ij = d_o_g_h - d_o_s_h;
                 o_s_min = o_s;
             }
         }
+
+        // 找到距离表面O最近的H
+        let (d_o_s_h, a_h) = {
+            let a_o_s = mol.get_atom(o_s_min).unwrap();
+            let d1 = a_o_s.distance(a_h1);
+            let d2 = a_o_s.distance(a_h2);
+            if d1 < d2 {
+                (d1, a_h1)
+            } else {
+                (d2, a_h2)
+            }
+        };
+        let d_o_g_h = a_o_g.distance(a_h);
+        let lambda_ij = d_o_g_h - d_o_s_h;
+
         info!("{:4} {:4} {:-10.5} {:-10.5}", o_g, o_s_min, d_ij, lambda_ij);
         inner_sum += gaussian_factor(w, d, d_ij) * gaussian_factor(w, lambda, lambda_ij);
     }
