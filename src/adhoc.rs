@@ -23,6 +23,8 @@ struct Variables {
     n_grid: usize,
     /// The W parameter in Gaussian function.
     w: f64,
+    /// The value of N * M * PI in equation (for Zhu Ling)
+    nmpi: Option<f64>,
     /// Gas phase water molecules defined in oxygen and the associated hydrogon
     /// atoms in H2O.
     h2o_gas_map: std::collections::HashMap<usize, (usize, usize)>,
@@ -137,7 +139,9 @@ pub fn cli() -> Result<()> {
                 sum += f;
             }
 
-            let a = w / (n * m * std::f64::consts::PI);
+            // let a = w / (n * m * std::f64::consts::PI);
+            // 应朱玲要求, 可设置 N * M * PI的数值
+            let a = w / vars.nmpi.unwrap_or_else(|| n * m * std::f64::consts::PI);
             let pdl = a * sum;
             println!("{:-10.4} {:-10.4} {:-10.4}", d, l, pdl);
             zi.push(pdl);
@@ -204,12 +208,6 @@ fn plot_3d(z: Vec<Vec<f64>>, x: Vec<f64>, y: Vec<f64>) {
     use plotly::layout::Axis;
 
     let mut plot = Plot::new();
-
-    // layout tuning
-    // let xaxis = Axis::new().tick_format("-0.2f");
-    // let yaxis = Axis::new().tick_format("-0.2f");
-    // let layout = Layout::new().xaxis(xaxis).yaxis(yaxis);
-    // plot.set_layout(layout);
 
     let trace1 = Surface::new(z).x(x).y(y).cauto(false);
     plot.add_trace(trace1);
