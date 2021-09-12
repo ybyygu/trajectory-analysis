@@ -55,6 +55,7 @@ impl Default for Variables {
             l_range: (-5.0, 5.0),
             n_grid: 10,
             w: 1.0,
+            nmpi: None,
             o_atoms_surface,
             h2o_gas_map,
         }

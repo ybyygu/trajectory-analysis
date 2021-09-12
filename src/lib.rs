@@ -1,5 +1,6 @@
 // [[file:../trajectory.note::*imports][imports:1]]
 #![feature(seek_convenience)]
+#![feature(seek_stream_len)]
 
 #[cfg(test)]
 #[macro_use] extern crate approx;

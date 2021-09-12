@@ -318,10 +318,7 @@ pub mod cli {
             let (natoms, nframes) = quick_check_natoms_nframes(&trjfile)?;
             let indices = lindemann_process_frames(&trjfile, natoms, nframes, &settings);
 
-            println!(
-                "{:^8}\t{:^18}\t{:^18}",
-                "atom index", "distance to com", "lindemann index"
-            );
+            println!("{:^8}\t{:^18}\t{:^18}", "atom index", "distance to com", "lindemann index");
             for (i, (di, qi)) in indices.into_iter().enumerate() {
                 println!("{:^8}\t{:^-18.8}\t{:^-18.8}", i + 1, di, qi);
             }

@@ -17,14 +17,10 @@ gut = { version = "0.1", package="gchemol-gut" }
 vecfx = { version = "0.1", features= ["nalgebra"] }
 gchemol = { version = ">=0.0.41", features=["adhoc"]}
 plotly = "0.4.1"
-# structopt_ = { version = "0.3", package="structopt" }
 
 # TODO: remove below
-itertools = "0.8"
 petgraph = "0.5"
 structopt = "0.3"
-gchemol_old = {git = "https://github.com/ybyygu/gchemol.git", package="gchemol"}
-quicli = "0.4"                  # TODO: remove
 cgmath = "0.17"                 # TODO: remove
 
 [dev-dependencies]
