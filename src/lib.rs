@@ -1,4 +1,5 @@
 // [[file:../trajectory.note::*imports][imports:1]]
+// for linderman
 #![feature(seek_convenience)]
 #![feature(seek_stream_len)]
 
@@ -9,20 +10,18 @@ use std::collections::HashMap;
 // imports:1 ends here
 
 // [[file:../trajectory.note::*mods][mods:1]]
-pub mod adhoc;
 mod atoms;
 mod graph;
 mod lammps;
 mod lindemann;
 
+pub mod adhoc;
 pub mod lammps_;
 pub mod xyz;
 
 pub mod common {
-    pub use gut::prelude::*;
     pub use gut::cli::*;
-
-    // pub use quicli::prelude::*;
+    pub use gut::prelude::*;
 }
 // mods:1 ends here
 

@@ -1,7 +1,7 @@
 # [[file:trajectory.note::*cargo][cargo:1]]
 [package]
 name = "trajectory-analysis"
-version = "0.1.7"
+version = "0.2.0"
 edition = "2018"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
@@ -16,7 +16,7 @@ text-parser = { version = "0.1.1", package = "gchemol-parser" }
 gut = { version = "0.1", package="gchemol-gut" }
 vecfx = { version = "0.1", features= ["nalgebra"] }
 gchemol = { version = ">=0.0.41", features=["adhoc"]}
-plotly = "0.4.1"
+plotly = "0.6"
 
 # TODO: remove below
 petgraph = "0.5"
