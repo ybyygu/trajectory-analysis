@@ -1,16 +1,18 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
+// [[file:../trajectory.note::*imports][imports:1]]
 use std::path::Path;
 use std::collections::HashMap;
 
-use guts::prelude::*;
-use text_parser::*;
+use gut::prelude::*;
+use text_parser::parsers::*;
+
+// FIXME: remove
+use text_parser::TextParser;
+
+// FIXME: remove
+use nom::{named, tag, do_parse, IResult, many_m_n};
 // imports:1 ends here
 
-// core
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*core][core:1]]
+// [[file:../trajectory.note::*core][core:1]]
 /// Minimal representation for LAMMPS trajectory frame.
 #[derive(Debug, Default)]
 pub struct LammpsTrajectoryFrame {
@@ -51,10 +53,7 @@ fn read_lammps_dump_file() {
 }
 // core:1 ends here
 
-// meta
-// 读入Frame元数据.
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*meta][meta:1]]
+// [[file:../trajectory.note::*meta][meta:1]]
 #[derive(Debug)]
 struct FrameData {
     timestep: usize,
@@ -92,9 +91,7 @@ ITEM: BOX BOUNDS pp pp pp
 }
 // meta:1 ends here
 
-// src
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*src][src:1]]
+// [[file:../trajectory.note::*src][src:1]]
 #[derive(Debug)]
 struct BoxData {
     t: String,
@@ -129,9 +126,7 @@ fn test_read_box_data() {
 }
 // src:1 ends here
 
-// src
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*src][src:1]]
+// [[file:../trajectory.note::*src][src:1]]
 // ITEM: ATOMS id type x y z c_eng c_cn c_cnt c_cna
 named!(read_atom_header<&str, &str>, do_parse!(
             tag!("ITEM: ATOMS")     >>
@@ -196,9 +191,7 @@ fn read_atoms(input: &str, natoms: usize) -> IResult<&str, HashMap<usize, Lammps
 }
 // src:1 ends here
 
-// tests
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*tests][tests:1]]
+// [[file:../trajectory.note::*tests][tests:1]]
 #[test]
 fn test_read_atoms() {
     let txt = "ITEM: ATOMS id type x y z c_eng c_cn c_cnt c_cna
@@ -233,9 +226,7 @@ fn test_read_atoms() {
 }
 // tests:1 ends here
 
-// frame
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*frame][frame:1]]
+// [[file:../trajectory.note::*frame][frame:1]]
 fn read_lammps_dump_frame(input: &str) -> IResult<&str, LammpsTrajectoryFrame> {
     let (rest, frame_data) = read_meta_data(input)?;
     let (rest, box_data) = read_box_data(rest)?;
@@ -255,6 +246,8 @@ fn read_lammps_dump_frame(input: &str) -> IResult<&str, LammpsTrajectoryFrame> {
 #[test]
 fn test_parser() -> Result<()> {
     let fname = "tests/files/lammps-test.dump";
+
+    // FIXME: update
     let parser = TextParser::default();
     let frames: Vec<_> = parser.parse_file(fname, read_lammps_dump_frame).collect();
     assert_eq!(frames.len(), 3);
@@ -263,11 +256,10 @@ fn test_parser() -> Result<()> {
 }
 // frame:1 ends here
 
-// pub
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*pub][pub:1]]
+// [[file:../trajectory.note::*pub][pub:1]]
 /// Parse LAMMPS trajectory file (.dump), returning a list of frames.
 pub fn parse_lammps_dump_file(trjfile: &Path) -> impl Iterator<Item = LammpsTrajectoryFrame> + '_ {
+    // FIXME: update
     let parser = TextParser::default();
     parser.parse_file(trjfile, read_lammps_dump_frame)
 }

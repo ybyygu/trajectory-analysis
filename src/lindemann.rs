@@ -1,17 +1,12 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
+// [[file:../trajectory.note::*imports][imports:1]]
 use std::path::{Path, PathBuf};
 
 use crate::lammps_::*;
 
-use guts::prelude::*;
+use gut::prelude::*;
 // imports:1 ends here
 
-// distances
-// aperiodic
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*distances][distances:1]]
+// [[file:../trajectory.note::*distances][distances:1]]
 fn calculate_distance_matrix(frame: &LammpsTrajectoryFrame) -> Vec<f64> {
     let natoms = frame.atoms.len();
     debug!("dm: found {} atoms in frame {}", natoms, frame.timestep);
@@ -37,9 +32,7 @@ fn calculate_distance_matrix(frame: &LammpsTrajectoryFrame) -> Vec<f64> {
 }
 // distances:1 ends here
 
-// com
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*com][com:1]]
+// [[file:../trajectory.note::*com][com:1]]
 fn calculate_distances_center_of_mass(frame: &LammpsTrajectoryFrame, settings: &config::Settings) -> Vec<f64> {
     let natoms = frame.atoms.len();
     debug!("dm: found {} atoms in frame {}", natoms, frame.timestep);
@@ -104,14 +97,10 @@ fn test_points_radii() {
 }
 // com:1 ends here
 
-// config
-// 用于读取原子类型相关数据
-// type => symbol => masses
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*config][config:1]]
+// [[file:../trajectory.note::*config][config:1]]
 mod config {
-    use guts::config::*;
-    use guts::prelude::*;
+    use gut::config::*;
+    use gut::prelude::*;
 
     #[derive(Debug, Serialize, Deserialize, Clone)]
     pub(crate) struct Atom {
@@ -159,9 +148,7 @@ mod config {
 }
 // config:1 ends here
 
-// core
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*core][core:1]]
+// [[file:../trajectory.note::*core][core:1]]
 use indicatif::ProgressBar;
 
 fn lindemann_process_frames(
@@ -194,10 +181,8 @@ fn lindemann_process_frames(
         .with_style(indicatif::ProgressStyle::default_bar().progress_chars("#>-"));
     for frame in frames {
         nframes += 1.0;
-        // dbg!(frame.timestep);
         let distances1 = calculate_distance_matrix(&frame);
         let distances2 = calculate_distances_center_of_mass(&frame, settings);
-        // dbg!(distances1.len());
         for i in 0..npairs {
             let xn = distances1[i];
             let mean = array_mean[i];
@@ -252,10 +237,7 @@ fn lindemann_process_frames(
 }
 // core:1 ends here
 
-// quick check
-// 快速读取trajectory文件, 获取原子数和帧数信息?
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*quick%20check][quick check:1]]
+// [[file:../trajectory.note::*quick check][quick check:1]]
 fn quick_check_natoms_nframes(trjfile: &Path) -> Result<(usize, usize)> {
     use std::fs::File;
     use std::io::prelude::*;
@@ -296,16 +278,14 @@ fn test_quick_check() {
 }
 // quick check:1 ends here
 
-// cli
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*cli][cli:1]]
+// [[file:../trajectory.note::*cli][cli:1]]
 pub mod cli {
     use super::*;
 
     use structopt::StructOpt;
 
-    use guts::cli::*;
-    use guts::config::*;
+    use gut::cli::*;
+    use gut::config::*;
 
     /// Calculate Lindemann indices for LAMMPS trajectory file (.dump)
     ///
@@ -338,10 +318,7 @@ pub mod cli {
             let (natoms, nframes) = quick_check_natoms_nframes(&trjfile)?;
             let indices = lindemann_process_frames(&trjfile, natoms, nframes, &settings);
 
-            println!(
-                "{:^8}\t{:^18}\t{:^18}",
-                "atom index", "distance to com", "lindemann index"
-            );
+            println!("{:^8}\t{:^18}\t{:^18}", "atom index", "distance to com", "lindemann index");
             for (i, (di, qi)) in indices.into_iter().enumerate() {
                 println!("{:^8}\t{:^-18.8}\t{:^-18.8}", i + 1, di, qi);
             }
@@ -354,9 +331,7 @@ pub mod cli {
 }
 // cli:1 ends here
 
-// test
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*test][test:1]]
+// [[file:../trajectory.note::*test][test:1]]
 #[test]
 #[ignore]
 fn test_linermann() {

@@ -1,16 +1,12 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
-use quicli::prelude::*;
+// [[file:../../trajectory.note::*imports][imports:1]]
+use gut::cli::*;
+use gut::prelude::*;
 use std::path::{Path, PathBuf};
 
-type Result<T> = ::std::result::Result<T, Error>;
 use structopt::StructOpt;
 // imports:1 ends here
 
-// cmdline
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*cmdline][cmdline:1]]
+// [[file:../../trajectory.note::*cmdline][cmdline:1]]
 /// Count rings in trajectory file (xyz format only)
 #[derive(Debug, StructOpt)]
 struct Cli {
@@ -34,7 +30,7 @@ fn main() -> CliResult {
     use gchemol::prelude::*;
 
     let args = Cli::from_args();
-    args.verbosity.setup_env_logger(&env!("CARGO_PKG_NAME"))?;
+    args.verbosity.setup_logger();
 
     use trajectory_analysis::xyz::*;
 

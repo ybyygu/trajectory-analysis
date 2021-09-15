@@ -1,25 +1,18 @@
-// header
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*header][header:1]]
+// [[file:../trajectory.note::*header][header:1]]
 /// Credit:
 ///
 /// Heavily inspired by the codes developed by vitroid: https://github.com/vitroid/CountRings
 // header:1 ends here
 
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
+// [[file:../trajectory.note::*imports][imports:1]]
 use std::path::Path;
 
 use gchemol::prelude::*;
 use gchemol::Molecule;
-
-use crate::common::*;
+use gut::prelude::*;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*base][base:1]]
+// [[file:../trajectory.note::*base][base:1]]
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -57,7 +50,7 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
         }
 
         // construct molecule from text stream
-        let mut mol = Molecule::parse_from(&buf, "text/xyz")?;
+        let mut mol = Molecule::from_str(&buf, "text/xyz")?;
 
         // build bonding connectivity
         mol.rebond();
@@ -93,12 +86,10 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
 }
 // base:1 ends here
 
-// entry/find rings
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*entry/find%20rings][entry/find rings:1]]
+// [[file:../trajectory.note::*entry/find rings][entry/find rings:1]]
 use std::collections::HashSet;
 
-pub type Rings = Vec<HashSet<AtomIndex>>;
+pub type Rings = Vec<HashSet<usize>>;
 
 pub trait FindRings {
     fn find_rings(&self, max: usize) -> Rings;
@@ -117,16 +108,11 @@ impl FindRings for Molecule {
 }
 // entry/find rings:1 ends here
 
-// core
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*core][core:1]]
-use gchemol::AtomIndex;
-use itertools::Itertools;
-
+// [[file:../trajectory.note::*core][core:1]]
 pub(crate) fn find_rings(mol: &Molecule, max_ring_size: usize) -> Rings {
     let mut rings = vec![];
-    for x in mol.sites() {
-        let mut neis = mol.neighbors(x);
+    for x in mol.numbers() {
+        let mut neis = mol.connected(x).collect_vec();
         neis.sort();
         for p in neis.iter().combinations(2) {
             let y = p[0];
@@ -147,7 +133,7 @@ pub(crate) fn find_rings(mol: &Molecule, max_ring_size: usize) -> Rings {
 
 fn find_ring(
     mol: &Molecule,        // parent molecule
-    members: &[AtomIndex], // current node list
+    members: &[usize], // current node list
     max: usize,            // max ring size?
 ) -> (usize, Rings) {
     let n = members.len();
@@ -159,7 +145,7 @@ fn find_ring(
     // let s: HashSet<_> = members.to_vec().into_iter().collect();
     let last = members[n - 1];
     let mut max = max;
-    for adj in mol.neighbors(last) {
+    for adj in mol.connected(last) {
         if members.contains(&adj) {
             if adj == members[0] {
                 // Ring is closed.
@@ -187,7 +173,7 @@ fn find_ring(
     (max, results)
 }
 
-fn shortcuts(mol: &Molecule, members: &[AtomIndex]) -> bool {
+fn shortcuts(mol: &Molecule, members: &[usize]) -> bool {
     let n = members.len();
     for i in 0..n {
         for j in (i + 1)..n {
@@ -201,7 +187,7 @@ fn shortcuts(mol: &Molecule, members: &[AtomIndex]) -> bool {
 }
 
 // FIXME: caching
-fn shortest_pathlen(mol: &Molecule, i: AtomIndex, j: AtomIndex) -> usize {
+fn shortest_pathlen(mol: &Molecule, i: usize, j: usize) -> usize {
     if let Some(n) = mol.nbonds_between(i, j) {
         n
     } else {
@@ -210,16 +196,11 @@ fn shortest_pathlen(mol: &Molecule, i: AtomIndex, j: AtomIndex) -> usize {
 }
 // core:1 ends here
 
-// tests
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*tests][tests:1]]
+// [[file:../trajectory.note::*tests][tests:1]]
 #[test]
 fn test_read_xyz() -> Result<()> {
-    // let path = "./test-files/nanoreactor/90ps~101ps.xyz";
-    // let mol = read_frame(path)?;
-
     let path = "data/8e/0f1aaf-d18d-4893-aa5b-4b3cd736ca99/a.mol2";
-    let mols = gchemol::io::read(path)?;
+    let mols = gchemol::io::read(path)?.collect_vec();
     let mol = &mols[0];
 
     // output in NGPH for test against vitroid/CountRings

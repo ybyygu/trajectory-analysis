@@ -23,7 +23,7 @@ use crate::graph::fragments_from_atoms;
 // - 结构信息: dump, cell
 
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*extract%20frame%20structure][extract frame structure:1]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*extract frame structure][extract frame structure:1]]
 pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> Result<(), Box<Error>>
 {
     // 1. guess required lammps files from input filename
@@ -65,7 +65,7 @@ pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> R
 
 // fragment analysis
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*fragment%20analysis][fragment analysis:1]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*fragment analysis][fragment analysis:1]]
 pub fn analyze_frames(filename: &str, outfile: &str, maxcols: usize) -> Result<(), Box<Error>>{
     let frames = parse_lammps_files(filename)?;
     write_formated_text(&frames, outfile, maxcols)?;
@@ -888,9 +888,8 @@ fn test_parse_terse_bonds_line() {
 
 // on file basis
 // 处理文件级别的逻辑
-// #+name: 7ea4d968-ef79-438d-8fed-ce109e391554
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::7ea4d968-ef79-438d-8fed-ce109e391554][7ea4d968-ef79-438d-8fed-ce109e391554]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*on file basis][on file basis:1]]
 /// Parameters
 /// ----------
 /// inputfile: the path of a .bonds file
@@ -931,13 +930,12 @@ fn create_terse_copy_of_lammps_bonds_file
 
     Ok("done".to_string())
 }
-// 7ea4d968-ef79-438d-8fed-ce109e391554 ends here
+// on file basis:1 ends here
 
 // on frame basis
 // 处理轨迹中单一帧
-// #+name: 2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2][2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*on frame basis][on frame basis:1]]
 use std::iter::Peekable;
 
 fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, String>
@@ -1003,11 +1001,11 @@ fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, S
 //     let mut file = File::create(&path).unwrap();
 //     file.write_all(output.as_bytes());
 // }
-// 2bf6281c-b33e-4181-b7fb-8a3eb6ad88b2 ends here
+// on frame basis:1 ends here
 
 // 有陨版: 保留连接表, 不保留bond order
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*%E6%9C%89%E9%99%A8%E7%89%88:%20%E4%BF%9D%E7%95%99%E8%BF%9E%E6%8E%A5%E8%A1%A8,%20%E4%B8%8D%E4%BF%9D%E7%95%99bond%20order][有陨版: 保留连接表, 不保留bond order:1]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*有陨版: 保留连接表, 不保留bond order][有陨版: 保留连接表, 不保留bond order:1]]
 fn get_terse_line_from_bonds_data_line(line: &str) -> Result<(usize, String), String>{
     if line.starts_with("# ") {
         let msg = format!("incorrect line: {}", line);
@@ -1059,7 +1057,7 @@ fn test_terse_line() {
 
 // functions parsing line
 
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*functions%20parsing%20line][functions parsing line:1]]
+// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*functions parsing line][functions parsing line:1]]
 fn get_int_data_from_comment_line(line: &str, prefix: &str) -> Result<usize, String> {
     if line.starts_with(prefix) {
         let s = line[prefix.len()..].trim().parse::<usize>();

@@ -1,26 +1,27 @@
-# cargo
-
-# [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*cargo][cargo:1]]
+# [[file:trajectory.note::*cargo][cargo:1]]
 [package]
 name = "trajectory-analysis"
-version = "0.1.5"
+version = "0.1.7"
 edition = "2018"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
 [dependencies]
-petgraph = "*"
-guts = { path = "../../guts" }
 serde = {version="1", features = ["derive"]}
-structopt = "0.2"
-quicli = "0.4"                  # TODO: remove
-cgmath = "0.17"                 # TODO: remove
+serde_json = "1"
 clap = "2"
+indexmap = "1"
 indicatif = "0.13"
-itertools = "0.8"
 streaming-stats = "0.2"
-gchemol = {git = "https://github.com/ybyygu/gchemol.git", tag="v0.0.34"}
-#gchemol = {path = "/home/ybyygu/Workspace/Programming/gchemol-rs/gchemol/gchemol"}
-text-parser = {path = "../../gchemol-rs/parser"}
+text-parser = { version = "0.1.1", package = "gchemol-parser" }
+gut = { version = "0.1", package="gchemol-gut" }
+vecfx = { version = "0.1", features= ["nalgebra"] }
+gchemol = { version = ">=0.0.41", features=["adhoc"]}
+plotly = "0.4.1"
+
+# TODO: remove below
+petgraph = "0.5"
+structopt = "0.3"
+cgmath = "0.17"                 # TODO: remove
 
 [dev-dependencies]
 approx = "0.3"

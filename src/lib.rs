@@ -1,9 +1,6 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
+// [[file:../trajectory.note::*imports][imports:1]]
 #![feature(seek_convenience)]
-extern crate petgraph;
-extern crate cgmath;
+#![feature(seek_stream_len)]
 
 #[cfg(test)]
 #[macro_use] extern crate approx;
@@ -11,33 +8,30 @@ extern crate cgmath;
 use std::collections::HashMap;
 // imports:1 ends here
 
-// mods
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*mods][mods:1]]
+// [[file:../trajectory.note::*mods][mods:1]]
+pub mod adhoc;
 mod atoms;
 mod graph;
 mod lammps;
 mod lindemann;
 
-pub mod xyz;
 pub mod lammps_;
+pub mod xyz;
 
 pub mod common {
-    pub use quicli::prelude::*;
-    pub type Result<T> = ::std::result::Result<T, Error>;
+    pub use gut::prelude::*;
+    pub use gut::cli::*;
+
+    // pub use quicli::prelude::*;
 }
 // mods:1 ends here
 
-// exports
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*exports][exports:1]]
+// [[file:../trajectory.note::*exports][exports:1]]
 pub use lammps::{analyze_frames, extract_frame};
 pub use lindemann::cli::enter_main as lindemann_cli;
 // exports:1 ends here
 
-// frame
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*frame][frame:1]]
+// [[file:../trajectory.note::*frame][frame:1]]
 pub struct Frame {
     pub timestep: usize,
     pub natoms: usize,

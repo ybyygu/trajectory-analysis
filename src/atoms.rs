@@ -1,18 +1,13 @@
-// globals
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*globals][globals:1]]
+// [[file:../trajectory.note::*imports][imports:1]]
 use std::collections::HashMap;
-use std::path::Path;
 use std::error::Error;
 use std::fs::File;
-use std::io::{self, BufReader, BufWriter};
 use std::io::Write;
-// globals:1 ends here
+use std::io::{self, BufReader, BufWriter};
+use std::path::Path;
+// imports:1 ends here
 
-// atom
-// 定义与Atom相关的元信息
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*atom][atom:1]]
+// [[file:../trajectory.note::*atom][atom:1]]
 #[derive(Debug, Default, Clone)]
 pub struct AtomData{
     pub index: usize,
@@ -37,10 +32,7 @@ impl AtomData {
 }
 // atom:1 ends here
 
-// trajectory frame
-// #+name: ec36c72e-4d04-447e-bd3d-bd4c6c3c49bb
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::ec36c72e-4d04-447e-bd3d-bd4c6c3c49bb][ec36c72e-4d04-447e-bd3d-bd4c6c3c49bb]]
+// [[file:../trajectory.note::ec36c72e-4d04-447e-bd3d-bd4c6c3c49bb][ec36c72e-4d04-447e-bd3d-bd4c6c3c49bb]]
 // data structure for a single frame
 pub struct TrajectoryFrame {
     pub timestep    : usize,            // current timestep
@@ -53,11 +45,7 @@ pub struct TrajectoryFrame {
 }
 // ec36c72e-4d04-447e-bd3d-bd4c6c3c49bb ends here
 
-
-
-// #+name: 8a0cf3ff-227f-493b-aa5e-20ac3cac8f5c
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::8a0cf3ff-227f-493b-aa5e-20ac3cac8f5c][8a0cf3ff-227f-493b-aa5e-20ac3cac8f5c]]
+// [[file:../trajectory.note::8a0cf3ff-227f-493b-aa5e-20ac3cac8f5c][8a0cf3ff-227f-493b-aa5e-20ac3cac8f5c]]
 impl TrajectoryFrame {
     pub fn new() -> Self {
         let positions: HashMap<usize, [f64; 3]> = HashMap::new();
@@ -78,10 +66,7 @@ impl TrajectoryFrame {
 }
 // 8a0cf3ff-227f-493b-aa5e-20ac3cac8f5c ends here
 
-// src
-// #+name: 6746df7d-0871-43bf-98cd-2e00e15020a5
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::6746df7d-0871-43bf-98cd-2e00e15020a5][6746df7d-0871-43bf-98cd-2e00e15020a5]]
+// [[file:../trajectory.note::*src][src:1]]
 use cgmath::{Vector3, Matrix3, Point3, Deg};
 use cgmath::prelude::*;
 
@@ -96,14 +81,9 @@ fn cart_to_frac(matrix: Matrix3<f64>,
 
     fractional
 }
-// 6746df7d-0871-43bf-98cd-2e00e15020a5 ends here
+// src:1 ends here
 
-
-
-// 最近邻镜像原子
-// #+name: c57f4ca0-4e68-4e30-a91b-7cbd47b7071c
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::c57f4ca0-4e68-4e30-a91b-7cbd47b7071c][c57f4ca0-4e68-4e30-a91b-7cbd47b7071c]]
+// [[file:../trajectory.note::c57f4ca0-4e68-4e30-a91b-7cbd47b7071c][c57f4ca0-4e68-4e30-a91b-7cbd47b7071c]]
 use std::f64;
 
 fn get_nearest_image(
@@ -158,11 +138,7 @@ fn test_get_nearest_image() {
 }
 // c57f4ca0-4e68-4e30-a91b-7cbd47b7071c ends here
 
-
-
-// #+name: c90b9d01-096f-47c1-bbfd-2649862e61dc
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::c90b9d01-096f-47c1-bbfd-2649862e61dc][c90b9d01-096f-47c1-bbfd-2649862e61dc]]
+// [[file:../trajectory.note::c90b9d01-096f-47c1-bbfd-2649862e61dc][c90b9d01-096f-47c1-bbfd-2649862e61dc]]
 fn cell_vectors_to_parameters(matrix: Matrix3<f64>) -> (f64, f64, f64, f64, f64, f64) {
     let a = matrix.x.magnitude();
     let b = matrix.y.magnitude();
@@ -176,11 +152,7 @@ fn cell_vectors_to_parameters(matrix: Matrix3<f64>) -> (f64, f64, f64, f64, f64,
 }
 // c90b9d01-096f-47c1-bbfd-2649862e61dc ends here
 
-
-
-// #+name: 9cab3b07-9781-48cd-a6fb-e6ee248b93dd
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::9cab3b07-9781-48cd-a6fb-e6ee248b93dd][9cab3b07-9781-48cd-a6fb-e6ee248b93dd]]
+// [[file:../trajectory.note::9cab3b07-9781-48cd-a6fb-e6ee248b93dd][9cab3b07-9781-48cd-a6fb-e6ee248b93dd]]
 #[test]
 fn test_cell() {
     // ovito/tests/files/LAMMPS/multi_sequence_1.dump
@@ -215,10 +187,7 @@ fn test_cell() {
 }
 // 9cab3b07-9781-48cd-a6fb-e6ee248b93dd ends here
 
-// src
-// #+name: fb3fb6d8-9ae3-4b29-a7c6-92c61776c867
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::fb3fb6d8-9ae3-4b29-a7c6-92c61776c867][fb3fb6d8-9ae3-4b29-a7c6-92c61776c867]]
+// [[file:../trajectory.note::fb3fb6d8-9ae3-4b29-a7c6-92c61776c867][fb3fb6d8-9ae3-4b29-a7c6-92c61776c867]]
 pub fn write_as_cif(frame: TrajectoryFrame, path: &Path) -> Result<(), Box<Error>>{
     let mut lines = String::new();
 
@@ -317,11 +286,7 @@ pub fn write_as_cif(frame: TrajectoryFrame, path: &Path) -> Result<(), Box<Error
 }
 // fb3fb6d8-9ae3-4b29-a7c6-92c61776c867 ends here
 
-
-
-// #+name: bacd2858-ded3-4982-a986-dbee08aa6a51
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::bacd2858-ded3-4982-a986-dbee08aa6a51][bacd2858-ded3-4982-a986-dbee08aa6a51]]
+// [[file:../trajectory.note::bacd2858-ded3-4982-a986-dbee08aa6a51][bacd2858-ded3-4982-a986-dbee08aa6a51]]
 fn get_image_symcode(image: Vector3<f64>) -> String {
     let mut symcode = String::new();
 
@@ -345,9 +310,7 @@ fn test_get_image_symcode() {
 }
 // bacd2858-ded3-4982-a986-dbee08aa6a51 ends here
 
-// tests
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*tests][tests:1]]
+// [[file:../trajectory.note::*tests][tests:1]]
 #[test]
 fn test_wirte_cif() {
     let mut frame = TrajectoryFrame::new();
@@ -372,9 +335,7 @@ fn test_wirte_cif() {
 }
 // tests:1 ends here
 
-// 定义最简单的原子结构信息.
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*%E5%AE%9A%E4%B9%89%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E5%8E%9F%E5%AD%90%E7%BB%93%E6%9E%84%E4%BF%A1%E6%81%AF.][定义最简单的原子结构信息.:1]]
+// [[file:../trajectory.note::*atom basis][atom basis:1]]
 use std::hash::{Hash, Hasher};
 use std::cmp::Ordering;
 
@@ -437,12 +398,9 @@ fn test_atom() {
     c.symbol = "C";
     assert!(c.symbol == "C");
 }
-// 定义最简单的原子结构信息.:1 ends here
+// atom basis:1 ends here
 
-// from symbols to formula
-// 实现从元素符号列表到分子式.
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*from%20symbols%20to%20formula][from symbols to formula:1]]
+// [[file:../trajectory.note::*from symbols to formula][from symbols to formula:1]]
 // it is better to use generics function,
 // but it is really difficult for me now
 pub fn get_reduced_formula(symbols: &[&str]) -> String {
