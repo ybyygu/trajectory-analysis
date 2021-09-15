@@ -14,6 +14,7 @@ mod atoms;
 mod graph;
 mod lammps;
 mod lindemann;
+mod topo;
 
 pub mod adhoc;
 pub mod lammps_;
@@ -23,11 +24,13 @@ pub mod common {
     pub use gut::cli::*;
     pub use gut::prelude::*;
 }
+use common::*;
 // mods:1 ends here
 
 // [[file:../trajectory.note::*exports][exports:1]]
 pub use lammps::{analyze_frames, extract_frame};
 pub use lindemann::cli::enter_main as lindemann_cli;
+pub use topo::topo_cli;
 // exports:1 ends here
 
 // [[file:../trajectory.note::*frame][frame:1]]

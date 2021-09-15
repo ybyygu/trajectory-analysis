@@ -1,4 +1,4 @@
-# [[file:trajectory.note::*cargo][cargo:1]]
+# [[file:trajectory.note::*cargo.toml][cargo.toml:1]]
 [package]
 name = "trajectory-analysis"
 version = "0.2.0"
@@ -25,4 +25,4 @@ cgmath = "0.17"                 # TODO: remove
 
 [dev-dependencies]
 approx = "0.3"
-# cargo:1 ends here
+# cargo.toml:1 ends here
