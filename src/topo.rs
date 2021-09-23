@@ -44,6 +44,25 @@ fn get_lattice_from_cp2k_input(file: &Path) -> Result<Lattice> {
 }
 // cp2k:1 ends here
 
+// [[file:../trajectory.note::*bond][bond:1]]
+use gchemol::Atom;
+
+fn is_bonded(atom1: &Atom, atom2: &Atom, distance: f64, bonding_ratio: f64) -> bool {
+    let r = bonding_ratio;
+    match (atom1.get_vdw_radius(), atom2.get_vdw_radius()) {
+        (Some(cr1), Some(cr2)) => {
+            let rcut = (cr1 + cr2) * r;
+            if distance > rcut {
+                false
+            } else {
+                true
+            }
+        }
+        _ => false,
+    }
+}
+// bond:1 ends here
+
 // [[file:../trajectory.note::*neighbors][neighbors:1]]
 use gchemol::neighbors::{Neighbor, Neighborhood};
 
@@ -61,6 +80,17 @@ fn create_neighborhood_probe(mol: &Molecule) -> Neighborhood {
     nh
 }
 
+fn calculate_coordination_number(mol: &Molecule, host: usize, neighbors: &[Neighbor], bonding_ratio: f64) -> usize {
+    let a1 = mol.get_atom(host).unwrap();
+    neighbors
+        .into_iter()
+        .filter(|n| {
+            let a2 = mol.get_atom(n.node).unwrap();
+            is_bonded(a1, a2, n.distance, bonding_ratio)
+        })
+        .count()
+}
+
 fn peek_number_of_atoms_from_xyz_file(f: &Path) -> Result<usize> {
     use std::io::prelude::*;
     use std::io::BufRead;
@@ -75,7 +105,12 @@ fn peek_number_of_atoms_from_xyz_file(f: &Path) -> Result<usize> {
 // neighbors:1 ends here
 
 // [[file:../trajectory.note::*core][core:1]]
-fn analyze_averaged_coordination_numbers(cp2k_input_file: &Path, xyz_file: &Path, r_cutoff: f64) -> Result<()> {
+fn analyze_averaged_coordination_numbers(
+    cp2k_input_file: &Path,
+    xyz_file: &Path,
+    r_cutoff: f64,
+    bonding_ratio: f64,
+) -> Result<()> {
     use vecfx::*;
 
     let natoms = peek_number_of_atoms_from_xyz_file(xyz_file.as_ref())?;
@@ -88,7 +123,13 @@ fn analyze_averaged_coordination_numbers(cp2k_input_file: &Path, xyz_file: &Path
         println!("processing frame {}", i + 1);
         mol.set_lattice(lat.clone());
         let nh = create_neighborhood_probe(&mol);
-        let cn_map: std::collections::HashMap<_, _> = numbers.iter().map(|&x| (x, nh.neighbors(x, r_cutoff).count())).collect();
+        let cn_map: std::collections::HashMap<_, _> = numbers
+            .iter()
+            .map(|&x| {
+                let neighbors = nh.neighbors(x, r_cutoff).collect_vec();
+                (x, calculate_coordination_number(&mol, x, &neighbors, bonding_ratio))
+            })
+            .collect();
         time_frames.push(cn_map);
     }
 
@@ -128,8 +169,12 @@ struct Cli {
     #[structopt(long = "input")]
     inpfile: PathBuf,
 
+    #[structopt(long, default_value = "0.6")]
+    /// The bonding ratio for defining a chemical bond
+    bonding_ratio: f64,
+
     #[structopt(short = "r", default_value = "2.0")]
-    /// The cutoff radius for searching nearest neighbors
+    /// The radius cutoff for searching neighboring atoms
     r_cutoff: f64,
 }
 
@@ -137,7 +182,7 @@ pub fn topo_cli() -> Result<()> {
     let args = Cli::from_args();
     args.verbose.setup_logger();
 
-    analyze_averaged_coordination_numbers(&args.inpfile, &args.trjfile, args.r_cutoff)?;
+    analyze_averaged_coordination_numbers(&args.inpfile, &args.trjfile, args.r_cutoff, args.bonding_ratio)?;
 
     Ok(())
 }

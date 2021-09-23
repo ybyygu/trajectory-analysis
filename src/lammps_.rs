@@ -1,6 +1,6 @@
 // [[file:../trajectory.note::*imports][imports:1]]
-use std::path::Path;
 use std::collections::HashMap;
+use std::path::Path;
 
 use gut::prelude::*;
 use text_parser::parsers::*;
@@ -9,7 +9,7 @@ use text_parser::parsers::*;
 use text_parser::TextParser;
 
 // FIXME: remove
-use nom::{named, tag, do_parse, IResult, many_m_n};
+use nom::{do_parse, many_m_n, named, tag, IResult};
 // imports:1 ends here
 
 // [[file:../trajectory.note::*core][core:1]]

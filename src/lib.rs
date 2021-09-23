@@ -4,7 +4,8 @@
 #![feature(seek_stream_len)]
 
 #[cfg(test)]
-#[macro_use] extern crate approx;
+#[macro_use]
+extern crate approx;
 
 use std::collections::HashMap;
 // imports:1 ends here
@@ -43,7 +44,7 @@ pub struct Frame {
 }
 
 impl Frame {
-    pub fn new() -> Frame{
+    pub fn new() -> Frame {
         let map1: HashMap<String, usize> = HashMap::new();
         let map2: HashMap<usize, [f64; 3]> = HashMap::new();
 

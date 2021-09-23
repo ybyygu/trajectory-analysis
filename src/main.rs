@@ -19,21 +19,21 @@ use trajectory_analysis::{analyze_frames, extract_frame};
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*config][config:1]]
 struct Config {
-    inpfile  : Option<String>,
-    extract  : bool,
-    timestep : usize,
-    outfile  : Option<String>,
-    maxcols  : usize,
+    inpfile: Option<String>,
+    extract: bool,
+    timestep: usize,
+    outfile: Option<String>,
+    maxcols: usize,
 }
 
 impl Config {
     fn new() -> Self {
         Config {
-            inpfile  : None,
-            extract  : false,
-            timestep : 0,
-            outfile  : None,
-            maxcols  : 100,
+            inpfile: None,
+            extract: false,
+            timestep: 0,
+            outfile: None,
+            maxcols: 100,
         }
     }
 }
@@ -53,7 +53,7 @@ fn parse_args() -> Result<Config, Box<dyn Error>> {
                 .help("debug switch")
                 .long("debug")
                 .multiple(true)
-                .short("d")
+                .short("d"),
         )
         .arg(
             Arg::with_name("extract")
@@ -61,7 +61,7 @@ fn parse_args() -> Result<Config, Box<dyn Error>> {
                 .long("extract")
                 .short("e")
                 .value_name("TIMESTEP")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("maxcols")
@@ -69,21 +69,21 @@ fn parse_args() -> Result<Config, Box<dyn Error>> {
                 .long("maxcols")
                 .short("m")
                 .value_name("NCOLUMNS")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("input")
                 .help("set input file name")
                 .value_name("INPUT-FILE")
                 .index(1)
-                .required(true)
+                .required(true),
         )
         .arg(
             Arg::with_name("output")
                 .help("set output file name")
                 .value_name("OUTPUT-FILE")
                 .index(2)
-                .required(true)
+                .required(true),
         )
         .setting(AppSettings::ArgRequiredElseHelp)
         .get_matches();
@@ -98,7 +98,7 @@ fn parse_args() -> Result<Config, Box<dyn Error>> {
             Err(why) => {
                 let msg = format!("timestep is expected to be integer, but found: {}", r);
                 Err(msg)?;
-            },
+            }
         }
     }
 
@@ -136,20 +136,20 @@ fn main() {
         match extract_frame(&inpfile, config.timestep, &outfile) {
             Ok(r) => {
                 println!("Done. CIF file saved as {}.", outfile);
-            },
+            }
             Err(why) => {
                 println!("Failed: {:}", why);
-            },
+            }
         }
     } else {
         println!("fragment analysis of trajectory file: {:}", inpfile);
         match analyze_frames(&inpfile, &outfile, config.maxcols) {
             Ok(r) => {
                 println!("Done. report file saved as {}", outfile);
-            },
+            }
             Err(why) => {
                 println!("Failed: {:}", why);
-            },
+            }
         }
     }
 }

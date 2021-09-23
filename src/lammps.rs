@@ -1,19 +1,19 @@
 // imports
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
-use std::fs::File;
-use std::error::Error;
-use std::io::{self, BufReader, BufWriter};
-use std::io::prelude::*;
 use std::collections::HashMap;
+use std::error::Error;
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::{self, BufReader, BufWriter};
 use std::path::Path;
 
-use petgraph::prelude::*;
 use petgraph as pg;
+use petgraph::prelude::*;
 
-use crate::atoms::{AtomData, TrajectoryFrame, write_as_cif};
-use crate::Frame;
+use crate::atoms::{write_as_cif, AtomData, TrajectoryFrame};
 use crate::graph::fragments_from_atoms;
+use crate::Frame;
 // imports:1 ends here
 
 // extract frame structure
@@ -22,10 +22,8 @@ use crate::graph::fragments_from_atoms;
 // - 键连信息: bonds
 // - 结构信息: dump, cell
 
-
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*extract frame structure][extract frame structure:1]]
-pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> Result<(), Box<Error>>
-{
+pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> Result<(), Box<Error>> {
     // 1. guess required lammps files from input filename
     let path = Path::new(filename);
     let path_lammps_data = path.with_extension("data");
@@ -33,16 +31,16 @@ pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> R
     let path_lammps_bonds = path.with_extension("bonds");
     let path_lammps_bonds_terse = path.with_extension("bonds-terse");
 
-    if ! path_lammps_data.is_file() {
+    if !path_lammps_data.is_file() {
         let msg = format!("data file not found: {:}", path_lammps_data.display());
         Err(msg)?;
     }
-    if ! path_lammps_bonds_terse.is_file() {
+    if !path_lammps_bonds_terse.is_file() {
         eprintln!("bonds-terse file not found, creating now ...");
         create_terse_copy_of_lammps_bonds_file(&path_lammps_bonds, &path_lammps_bonds_terse)?;
     }
 
-    if ! path_lammps_dump.is_file() {
+    if !path_lammps_dump.is_file() {
         let msg = format!("dump file not found: {:}", path_lammps_dump.display());
         Err(msg)?;
     }
@@ -66,7 +64,7 @@ pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> R
 // fragment analysis
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*fragment analysis][fragment analysis:1]]
-pub fn analyze_frames(filename: &str, outfile: &str, maxcols: usize) -> Result<(), Box<Error>>{
+pub fn analyze_frames(filename: &str, outfile: &str, maxcols: usize) -> Result<(), Box<Error>> {
     let frames = parse_lammps_files(filename)?;
     write_formated_text(&frames, outfile, maxcols)?;
 
@@ -81,11 +79,11 @@ fn parse_lammps_files(filename: &str) -> Result<Vec<Frame>, Box<Error>> {
     let path_lammps_bonds = path.with_extension("bonds");
     let path_lammps_bonds_terse = path.with_extension("bonds-terse");
 
-    if ! path_lammps_data.is_file() {
+    if !path_lammps_data.is_file() {
         let msg = format!("data file not found: {:}", path_lammps_data.display());
         Err(msg)?;
     }
-    if ! path_lammps_bonds_terse.is_file() {
+    if !path_lammps_bonds_terse.is_file() {
         eprintln!("bonds-terse file not found, creating now ...");
         create_terse_copy_of_lammps_bonds_file(&path_lammps_bonds, &path_lammps_bonds_terse)?;
     }
@@ -99,12 +97,12 @@ fn parse_lammps_files(filename: &str) -> Result<Vec<Frame>, Box<Error>> {
     frames
 }
 
-fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -> Result<(), Box<Error>>{
+fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -> Result<(), Box<Error>> {
     // create output file
     let f = File::create(outfile)?;
     let mut writer = BufWriter::new(f);
 
-    let mut species:HashMap<String, usize> = HashMap::new();
+    let mut species: HashMap<String, usize> = HashMap::new();
     for frame in frames {
         for (k, v) in &frame.fragments {
             let x = species.entry(k.to_string()).or_insert(0_usize);
@@ -116,7 +114,7 @@ fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -
     count_vec.sort_by_key(|k| k.1);
     count_vec.reverse();
 
-    let vs:Vec<String> = count_vec.iter().map(|x| x.0.to_string()).collect();
+    let vs: Vec<String> = count_vec.iter().map(|x| x.0.to_string()).collect();
     writer.write("Timestep ".as_bytes());
 
     let mut mc = vs.len();
@@ -127,12 +125,12 @@ fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -
     writer.write(format!("{:}\n", vs.join(" ")).as_bytes());
 
     for frame in frames {
-        let s = format!("{:^width$}", frame.timestep, width="Timestep ".len());
+        let s = format!("{:^width$}", frame.timestep, width = "Timestep ".len());
         writer.write(s.as_bytes());
         let mut lst = Vec::new();
         for k in vs.iter() {
             let count = frame.fragments.get(k).unwrap_or(&0_usize);
-            lst.push(format!("{:^width$}", count, width=k.len()));
+            lst.push(format!("{:^width$}", count, width = k.len()));
         }
         let s = format!("{}\n", lst.join(" "));
         writer.write(s.as_bytes());
@@ -146,11 +144,9 @@ fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -
 // - 关键信息: 所有原子对应的元素类型.
 // - 数据类型选择HashMap, key为index, value为元素符号
 
-
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*src][src:1]]
 /// read data from lammps .data file
-fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<Error>>
-{
+fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<Error>> {
     eprintln!("reading data file: {}", path.display());
 
     let fp = File::open(path)?;
@@ -159,7 +155,7 @@ fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<Err
 
     // sanity check
     if let Some(&Ok(ref firstline)) = lines_iter.peek() {
-        if ! firstline.starts_with("LAMMPS data file") {
+        if !firstline.starts_with("LAMMPS data file") {
             let msg = format!("read in a wrong file: {}", firstline);
             Err(msg)?;
         }
@@ -285,9 +281,7 @@ fn test_parse_data_file() {
 // #+name: daedfe6b-34ed-4dd1-94a2-4e698a00a42c
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::daedfe6b-34ed-4dd1-94a2-4e698a00a42c][daedfe6b-34ed-4dd1-94a2-4e698a00a42c]]
-fn get_frame_from_lammps_dump_file
-    (path: &Path, target_timestep: usize) -> Result<TrajectoryFrame, Box<Error>>
-{
+fn get_frame_from_lammps_dump_file(path: &Path, target_timestep: usize) -> Result<TrajectoryFrame, Box<Error>> {
     eprintln!("reading dump file: {}", path.display());
 
     let fp = File::open(path)?;
@@ -305,7 +299,10 @@ fn get_frame_from_lammps_dump_file
             eprintln!("reached the end of the file: {}", path.display());
             break;
         }
-        assert!(buf.starts_with("ITEM: TIMESTEP"), format!("Expect the frame header, but: {}", buf));
+        assert!(
+            buf.starts_with("ITEM: TIMESTEP"),
+            format!("Expect the frame header, but: {}", buf)
+        );
 
         // 1. get current timestep
         buf.clear();
@@ -356,7 +353,7 @@ fn get_frame_from_lammps_dump_file
 
             // 3.2 the atom records
             buf.clear();
-            for _ in 0..(natoms+1) {
+            for _ in 0..(natoms + 1) {
                 let nb = reader.read_line(&mut buf)?;
                 if nb <= 0 {
                     Err("Expect more lines: failed to read all atom records!")?;
@@ -402,14 +399,14 @@ enum BoxStyle {
     Triclinic,
 }
 
-fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<Error>>{
+fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<Error>> {
     use self::BoxStyle::{Orthogonal, Triclinic};
 
     let mut lines_iter = txt.lines();
 
-    let mut hi    = [0.0; 3];
-    let mut lo    = [0.0; 3];
-    let mut tilt  = [0.0; 3];
+    let mut hi = [0.0; 3];
+    let mut lo = [0.0; 3];
+    let mut tilt = [0.0; 3];
     let mut style = Orthogonal;
 
     if let Some(line) = lines_iter.next() {
@@ -423,17 +420,17 @@ fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<Error
 
             for i in 0..3 {
                 if let Some(line) = lines_iter.next() {
-                    let mut attrs:Vec<f64> = line.split_whitespace().map(|x| x.parse::<f64>().unwrap()).collect();
+                    let mut attrs: Vec<f64> = line.split_whitespace().map(|x| x.parse::<f64>().unwrap()).collect();
                     match style {
                         Orthogonal => {
                             lo[i] = attrs[0];
                             hi[i] = attrs[1];
-                        },
+                        }
                         Triclinic => {
                             lo[i] = attrs[0];
                             hi[i] = attrs[1];
                             tilt[i] = attrs[2];
-                        },
+                        }
                     }
                 } else {
                     Err("lammps box is incomplete!")?;
@@ -457,15 +454,15 @@ fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<Error
             vb[1] = hi[1] - lo[1];
             vc[2] = hi[2] - lo[2];
             origin = lo;
-        },
-        Triclinic  => {
+        }
+        Triclinic => {
             let xy = tilt[0];
             let xz = tilt[1];
             let yz = tilt[2];
 
             // x vector
-            let xlo = lo[0] - [0.0, xy, xz, xy+xz].iter().fold(f64::MAX, |a, &b| a.min(b));
-            let xhi = hi[0] - [0.0, xy, xz, xy+xz].iter().fold(f64::MIN, |a, &b| a.max(b));
+            let xlo = lo[0] - [0.0, xy, xz, xy + xz].iter().fold(f64::MAX, |a, &b| a.min(b));
+            let xhi = hi[0] - [0.0, xy, xz, xy + xz].iter().fold(f64::MIN, |a, &b| a.max(b));
             va[0] = xhi - xlo;
             // y vector
             let ylo = lo[1] - [0.0, yz].iter().fold(f64::MAX, |a, &b| a.min(b));
@@ -479,7 +476,7 @@ fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<Error
             vc[1] = yz;
             vc[2] = zhi - zlo;
             origin = [xlo, ylo, zlo];
-        },
+        }
     }
 
     Ok(([va, vb, vc], origin))
@@ -501,16 +498,16 @@ fn test_lammps_box() {
     let cell_vector1 = [11.525, 0.0, 0.0];
     let cell_vector2 = [0.0, 11.525, 0.0];
     let cell_vector3 = [0.0, 0.0, 11.525];
-    let cell_origin  = [-0.195983, -0.195983, -0.195983];
+    let cell_origin = [-0.195983, -0.195983, -0.195983];
 
     let (vts, origin) = get_lammps_dump_box(&box1).unwrap();
 
-    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon=1.0e-4);
+    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon = 1.0e-4);
 
     let box2 = "ITEM: BOX BOUNDS xy xz yz pp pp pp
 -0.08189 15.3282 -0.045807
@@ -521,16 +518,16 @@ fn test_lammps_box() {
     let cell_vector1 = [15.3643, 0.0, 0.0];
     let cell_vector2 = [-0.045807, 15.5026, 0.0];
     let cell_vector3 = [0.0, 0.0, 17.4858];
-    let cell_origin  = [-0.036083, 0.072939, 0.001924];
+    let cell_origin = [-0.036083, 0.072939, 0.001924];
 
     let (vts, origin) = get_lammps_dump_box(&box2).unwrap();
-    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[1][0], cell_vector2[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon=1.0e-4);
+    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[1][0], cell_vector2[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon = 1.0e-4);
 
     let box3 = "ITEM: BOX BOUNDS pp pp ff
 0.0000000000000000e+00 2.2931000000000001e+01
@@ -542,12 +539,12 @@ fn test_lammps_box() {
     let cell_vector3 = [0.0, 0.0, 51.498];
     let cell_origin = [0.0, 0.0, -1.0];
     let (vts, origin) = get_lammps_dump_box(&box3).unwrap();
-    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon=1.0e-4);
+    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon = 1.0e-4);
 }
 // 398e563b-0ad5-4845-a5c3-97c115748e74 ends here
 
@@ -555,7 +552,7 @@ fn test_lammps_box() {
 // #+name: dd0f9789-eb7f-492a-aa0d-24a76d346f76
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::dd0f9789-eb7f-492a-aa0d-24a76d346f76][dd0f9789-eb7f-492a-aa0d-24a76d346f76]]
-fn get_lammps_dump_positions(txt: &str, natoms: usize) -> Result<HashMap<usize, [f64; 3]>, Box<Error>>{
+fn get_lammps_dump_positions(txt: &str, natoms: usize) -> Result<HashMap<usize, [f64; 3]>, Box<Error>> {
     let mut lines_iter = txt.lines();
     let prefix = "ITEM: ATOMS";
 
@@ -575,7 +572,7 @@ fn get_lammps_dump_positions(txt: &str, natoms: usize) -> Result<HashMap<usize, 
     let mut positions: HashMap<usize, [f64; 3]> = HashMap::new();
     for _ in 0..natoms {
         if let Some(line) = lines_iter.next() {
-            let mut attrs:Vec<_> = line.split_whitespace().collect();
+            let mut attrs: Vec<_> = line.split_whitespace().collect();
             assert!(attrs.len() == labels.len(), line.to_string());
             let mut index = 0_usize;
             let mut x = 0_f64;
@@ -583,11 +580,11 @@ fn get_lammps_dump_positions(txt: &str, natoms: usize) -> Result<HashMap<usize, 
             let mut z = 0_f64;
             for (k, v) in labels.iter().zip(attrs.iter()) {
                 match k {
-                    &"x"  => x = v.parse().unwrap(),
-                    &"y"  => y = v.parse().unwrap(),
-                    &"z"  => z = v.parse().unwrap(),
+                    &"x" => x = v.parse().unwrap(),
+                    &"y" => y = v.parse().unwrap(),
+                    &"z" => z = v.parse().unwrap(),
                     &"id" => index = v.parse().unwrap(),
-                    _     => (),
+                    _ => (),
                 }
             }
             positions.insert(index, [x, y, z]);
@@ -614,8 +611,8 @@ fn test_parse_dump_positions() {
 
     let natoms = 5_usize;
     let positions = get_lammps_dump_positions(&txt, natoms).unwrap();
-    assert_relative_eq!(3.77622, positions[&1_usize][0], epsilon=1e-4);
-    assert_relative_eq!(0.131493, positions[&5_usize][2], epsilon=1e-4);
+    assert_relative_eq!(3.77622, positions[&1_usize][0], epsilon = 1e-4);
+    assert_relative_eq!(0.131493, positions[&5_usize][2], epsilon = 1e-4);
 
     let txt = "ITEM: ATOMS x y z type id
 0.1832399964 1.684999943 3.850500107 1 1
@@ -625,8 +622,8 @@ fn test_parse_dump_positions() {
 0.9467399716 0.4246200025 1.485839963 1 5 ";
 
     let positions = get_lammps_dump_positions(&txt, 5_usize).unwrap();
-    assert_relative_eq!(0.183239996, positions[&1_usize][0], epsilon=1e-4);
-    assert_relative_eq!(4.906760216, positions[&2_usize][0], epsilon=1e-4);
+    assert_relative_eq!(0.183239996, positions[&1_usize][0], epsilon = 1e-4);
+    assert_relative_eq!(4.906760216, positions[&2_usize][0], epsilon = 1e-4);
 }
 // tests:1 ends here
 
@@ -634,9 +631,7 @@ fn test_parse_dump_positions() {
 // #+name: 8497df51-3eb3-41fc-a87d-c1688c94c29f
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::8497df51-3eb3-41fc-a87d-c1688c94c29f][8497df51-3eb3-41fc-a87d-c1688c94c29f]]
-fn get_connectivity_from_terse_bonds_file
-    (path: &Path, target_timestep: usize) -> Result<HashMap<usize, Vec<usize>>, Box<Error>>
-{
+fn get_connectivity_from_terse_bonds_file(path: &Path, target_timestep: usize) -> Result<HashMap<usize, Vec<usize>>, Box<Error>> {
     eprintln!("reading bonds file: {}", path.display());
 
     let fp = File::open(path)?;
@@ -698,14 +693,10 @@ fn get_connectivity_from_terse_bonds_file
 }
 // 8497df51-3eb3-41fc-a87d-c1688c94c29f ends here
 
-
-
 // #+name: 1cb4fcf1-d093-41ce-a011-f88a95c9bf7b
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::1cb4fcf1-d093-41ce-a011-f88a95c9bf7b][1cb4fcf1-d093-41ce-a011-f88a95c9bf7b]]
-fn parse_terse_bonds_file (path: &Path, symbols: &HashMap<usize, String>)
-                           -> Result<Vec<Frame>, Box<Error>>
-{
+fn parse_terse_bonds_file(path: &Path, symbols: &HashMap<usize, String>) -> Result<Vec<Frame>, Box<Error>> {
     // create file handler and a buffle reader
     let fp = File::open(path)?;
     let mut reader = BufReader::new(fp);
@@ -747,20 +738,17 @@ fn parse_terse_bonds_file (path: &Path, symbols: &HashMap<usize, String>)
 // #+name: dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198][dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198]]
-fn get_connectivity_from_terse_bonds_file_frame(
-    txt: &str,
-    natoms: usize) -> Result<HashMap<usize, Vec<usize>>, Box<Error>>
-{
+fn get_connectivity_from_terse_bonds_file_frame(txt: &str, natoms: usize) -> Result<HashMap<usize, Vec<usize>>, Box<Error>> {
     let mut neighbors = HashMap::new();
 
     let mut lines_iter = txt.lines();
 
-    for n in 1..natoms+1 {
+    for n in 1..natoms + 1 {
         if let Some(line) = lines_iter.next() {
             let (charge, nns) = parse_terse_bonds_file_single_line(&line);
             let mut connected = vec![];
             for x in nns {
-                connected.push(x+n);
+                connected.push(x + n);
             }
             neighbors.insert(n, connected);
         } else {
@@ -771,8 +759,6 @@ fn get_connectivity_from_terse_bonds_file_frame(
     Ok(neighbors)
 }
 // dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198 ends here
-
-
 
 // #+name: b88e850d-3754-49fe-a0a6-cdf0ba8e2169
 
@@ -795,15 +781,12 @@ fn test_get_connectivity_from_terse_bonds_frame() {
 }
 // b88e850d-3754-49fe-a0a6-cdf0ba8e2169 ends here
 
-
-
 // #+name: 5f005858-636b-4d77-aca5-e6be1baca10a
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::5f005858-636b-4d77-aca5-e6be1baca10a][5f005858-636b-4d77-aca5-e6be1baca10a]]
-fn parse_terse_bonds_file_single_frame<I> (
-    lines_iter: &mut I,
-    symbols: &HashMap<usize, String>) -> Result<Frame, Box<Error>>
-    where I: Iterator<Item=io::Result<String>>,
+fn parse_terse_bonds_file_single_frame<I>(lines_iter: &mut I, symbols: &HashMap<usize, String>) -> Result<Frame, Box<Error>>
+where
+    I: Iterator<Item = io::Result<String>>,
 {
     // 1. read current timestep
     let mut timestep = 0;
@@ -817,7 +800,7 @@ fn parse_terse_bonds_file_single_frame<I> (
 
     // 2. read number of atoms
     let mut natoms = 0;
-        let label = "# Number of particles";
+    let label = "# Number of particles";
     if let Some(line) = lines_iter.next() {
         let line = line?;
         natoms = get_int_data_from_comment_line(&line, &label)?;
@@ -828,7 +811,7 @@ fn parse_terse_bonds_file_single_frame<I> (
     // 3. read connectivity for each atom
     let mut atoms = Vec::new();
     assert!(natoms > 0);
-    for n in 1..natoms+1 {
+    for n in 1..natoms + 1 {
         let mut data = AtomData::new();
         if let Some(line) = lines_iter.next() {
             let line = line?;
@@ -837,7 +820,7 @@ fn parse_terse_bonds_file_single_frame<I> (
             data.charge = charge;
             data.symbol = symbols.get(&data.index).unwrap().to_string();
             for x in neighbors {
-                data.neighbors.push(x+n);
+                data.neighbors.push(x + n);
             }
             atoms.push(data);
         } else {
@@ -864,14 +847,12 @@ fn parse_terse_bonds_file_single_frame<I> (
 fn parse_terse_bonds_file_single_line(line: &str) -> (f64, Vec<usize>) {
     let mut attrs = line.split_whitespace();
     let first = attrs.nth(0).unwrap();
-    let charge:f64 = first.parse().unwrap();
-    let neighbors:Vec<usize> = attrs.map(|x| x.parse::<usize>().unwrap()).collect();
+    let charge: f64 = first.parse().unwrap();
+    let neighbors: Vec<usize> = attrs.map(|x| x.parse::<usize>().unwrap()).collect();
 
     (charge, neighbors)
 }
 // 39637608-12b2-4724-ac38-cfc5d4f9c990 ends here
-
-
 
 // #+name: b0d25b51-fbb3-460a-882f-3cdb7c6f6619
 
@@ -894,9 +875,7 @@ fn test_parse_terse_bonds_line() {
 /// ----------
 /// inputfile: the path of a .bonds file
 /// outputfile: the path of the output file
-fn create_terse_copy_of_lammps_bonds_file
-    (inputfile: &Path, outputfile: &Path) -> Result<String, Box<Error>>
-{
+fn create_terse_copy_of_lammps_bonds_file(inputfile: &Path, outputfile: &Path) -> Result<String, Box<Error>> {
     // 1.0 prepare input file stream
     let mut fp = File::open(inputfile)?;
     let reader = BufReader::new(fp);
@@ -921,7 +900,6 @@ fn create_terse_copy_of_lammps_bonds_file
         let output = parse_lammps_bonds_single_snapshot(&mut lines_iter).unwrap();
         writer.write_all(&output.as_bytes());
         if let Some(line) = lines_iter.next() {
-            ;
         } else {
             println!("Warning: missing final blank comment.");
             break;
@@ -939,12 +917,13 @@ fn create_terse_copy_of_lammps_bonds_file
 use std::iter::Peekable;
 
 fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, String>
-    where I: Iterator<Item=io::Result<String>>,
+where
+    I: Iterator<Item = io::Result<String>>,
 {
     let mut timestep = 0 as usize;
     let mut natoms = 0 as usize;
 
-    let mut output:Vec<String> = Vec::new();
+    let mut output: Vec<String> = Vec::new();
 
     // 1. read in meta data from comments
     // expected => Some(Ok("# Timestep 0 "))
@@ -955,11 +934,11 @@ fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, S
             0 => {
                 timestep = get_int_data_from_comment_line(&line, "# Timestep").unwrap();
                 output.push(line);
-            },
+            }
             2 => {
                 natoms = get_int_data_from_comment_line(&line, "# Number of particles").unwrap();
                 output.push(line);
-            },
+            }
             _ => (),
         }
     }
@@ -1006,16 +985,16 @@ fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, S
 // 有陨版: 保留连接表, 不保留bond order
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*有陨版: 保留连接表, 不保留bond order][有陨版: 保留连接表, 不保留bond order:1]]
-fn get_terse_line_from_bonds_data_line(line: &str) -> Result<(usize, String), String>{
+fn get_terse_line_from_bonds_data_line(line: &str) -> Result<(usize, String), String> {
     if line.starts_with("# ") {
         let msg = format!("incorrect line: {}", line);
         return Err(msg);
     }
 
-    let mut attrs:Vec<&str> = line.split_whitespace().collect();
+    let mut attrs: Vec<&str> = line.split_whitespace().collect();
     let cur = attrs[0].parse::<usize>().unwrap();
     let nbonds = attrs[2].parse::<usize>().unwrap();
-    let neighbors = &attrs[3..3+nbonds];
+    let neighbors = &attrs[3..3 + nbonds];
 
     // partial charge
     let charge = &attrs.last().unwrap();
@@ -1026,7 +1005,7 @@ fn get_terse_line_from_bonds_data_line(line: &str) -> Result<(usize, String), St
     // 1. keep the neighbor which is larger than current
     // 2. store the shift relative to current
     for n in neighbors {
-        let n:usize = n.parse().unwrap();
+        let n: usize = n.parse().unwrap();
         if n > cur {
             result.push_str(format!(" {}", n - cur).as_str());
         }
@@ -1046,7 +1025,8 @@ fn test_terse_line() {
     assert!(result.starts_with("-0.313"));
 
     // test2
-    let s = " 137 1 9 9 249 257 138 145 153 265 273 129 0 0.450 0.450 0.710 0.410 0.709 0.450 0.450 0.709 0.709 5.047 -1.000 0.025";
+    let s =
+        " 137 1 9 9 249 257 138 145 153 265 273 129 0 0.450 0.450 0.710 0.410 0.709 0.450 0.450 0.709 0.709 5.047 -1.000 0.025";
     let new = get_terse_line_from_bonds_data_line(&s);
     assert!(new.is_ok());
     let (cur, result) = new.unwrap();
@@ -1066,10 +1046,7 @@ fn get_int_data_from_comment_line(line: &str, prefix: &str) -> Result<usize, Str
             Err(why) => return Err(format!("{:?}", why)),
         }
     } else {
-        let msg = format!(
-            "Failed to get value {:?} for current frame: {:?}",
-            prefix, line
-        );
+        let msg = format!("Failed to get value {:?} for current frame: {:?}", prefix, line);
         Err(msg)
     }
 }
@@ -1155,8 +1132,7 @@ fn get_atom_data_from_line(line: &str) -> Result<AtomData, String> {
 
 #[test]
 fn test_get_atom_data_from_line() {
-    let line =
-        " 121 3 2 301 28 0         0.978         0.978         1.956         2.000        -0.736 ";
+    let line = " 121 3 2 301 28 0         0.978         0.978         1.956         2.000        -0.736 ";
     let r = get_atom_data_from_line(&line);
     assert!(r.is_ok());
     // let (data, _) = r.unwrap();

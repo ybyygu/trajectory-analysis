@@ -66,7 +66,7 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
         let mut keys: Vec<_> = map.keys().collect();
         keys.sort();
         out.push_str(&format!("frame {}\n", iframe));
-        for k in 3..(max+1) {
+        for k in 3..(max + 1) {
             if let Some(n) = map.get(&k) {
                 out.push_str(&format!("{}, {:}\n", k, n));
             } else {
@@ -132,9 +132,9 @@ pub(crate) fn find_rings(mol: &Molecule, max_ring_size: usize) -> Rings {
 }
 
 fn find_ring(
-    mol: &Molecule,        // parent molecule
+    mol: &Molecule,    // parent molecule
     members: &[usize], // current node list
-    max: usize,            // max ring size?
+    max: usize,        // max ring size?
 ) -> (usize, Rings) {
     let n = members.len();
     if n > max {
