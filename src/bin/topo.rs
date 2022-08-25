@@ -1,9 +1,10 @@
-// [[file:../../trajectory.note::*imports][imports:1]]
+// [[file:../../trajectory.note::910ac51a][910ac51a]]
 use gut::cli::*;
-// imports:1 ends here
+use gut::prelude::*;
+// 910ac51a ends here
 
-// [[file:../../trajectory.note::*cmdline][cmdline:1]]
-fn main() -> CliResult {
+// [[file:../../trajectory.note::d0593bd1][d0593bd1]]
+fn main() -> Result<()> {
     trajectory_analysis::topo_cli()
 }
-// cmdline:1 ends here
+// d0593bd1 ends here

@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 // imports:1 ends here
 
-// [[file:../../trajectory.note::*cmdline][cmdline:1]]
+// [[file:../../trajectory.note::73f15884][73f15884]]
 /// Count rings in trajectory file (xyz format only)
 #[derive(Debug, StructOpt)]
 struct Cli {
@@ -26,7 +26,7 @@ struct Cli {
     verbosity: Verbosity,
 }
 
-fn main() -> CliResult {
+fn main() -> Result<()> {
     use gchemol::prelude::*;
 
     let args = Cli::from_args();
@@ -41,4 +41,4 @@ fn main() -> CliResult {
 
     Ok(())
 }
-// cmdline:1 ends here
+// 73f15884 ends here

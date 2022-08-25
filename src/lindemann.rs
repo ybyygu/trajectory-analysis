@@ -12,7 +12,10 @@ fn calculate_distance_matrix(frame: &LammpsTrajectoryFrame) -> Vec<f64> {
     debug!("dm: found {} atoms in frame {}", natoms, frame.timestep);
 
     // atom id counts from 1
-    let coords: Vec<[f64; 3]> = (1..natoms + 1).into_par_iter().map(|i| frame.atoms[&i].xyz.clone()).collect();
+    let coords: Vec<[f64; 3]> = (1..natoms + 1)
+        .into_par_iter()
+        .map(|i| frame.atoms[&i].xyz.clone())
+        .collect();
 
     let pairs: Vec<_> = (0..natoms).combinations(2).collect();
     pairs
@@ -94,7 +97,7 @@ fn test_points_radii() {
 }
 // com:1 ends here
 
-// [[file:../trajectory.note::*config][config:1]]
+// [[file:../trajectory.note::fa617f7c][fa617f7c]]
 mod config {
     use gut::config::*;
     use gut::prelude::*;
@@ -113,6 +116,8 @@ mod config {
     pub(crate) struct Settings {
         /// user defined bond valence paramters
         pub atoms: Vec<Atom>,
+        /// selected atoms for analysis
+        pub selections: Option<Vec<usize>>,
     }
 
     impl Default for Settings {
@@ -128,7 +133,7 @@ mod config {
                 },
             ];
 
-            Settings { atoms }
+            Settings { atoms, selections: None }
         }
     }
 
@@ -143,7 +148,7 @@ mod config {
         Settings::default().print_toml();
     }
 }
-// config:1 ends here
+// fa617f7c ends here
 
 // [[file:../trajectory.note::*core][core:1]]
 use indicatif::ProgressBar;
@@ -174,8 +179,8 @@ fn lindemann_process_frames(
     let mut nframes: f64 = 0.0;
 
     // setup progress bar
-    let bar =
-        ProgressBar::new(estimated_nframes as u64).with_style(indicatif::ProgressStyle::default_bar().progress_chars("#>-"));
+    let bar = ProgressBar::new(estimated_nframes as u64)
+        .with_style(indicatif::ProgressStyle::default_bar().progress_chars("#>-"));
     for frame in frames {
         nframes += 1.0;
         let distances1 = calculate_distance_matrix(&frame);
@@ -275,7 +280,7 @@ fn test_quick_check() {
 }
 // quick check:1 ends here
 
-// [[file:../trajectory.note::*cli][cli:1]]
+// [[file:../trajectory.note::07c944a2][07c944a2]]
 pub mod cli {
     use super::*;
 
@@ -302,7 +307,7 @@ pub mod cli {
         print: bool,
     }
 
-    pub fn enter_main() -> CliResult {
+    pub fn enter_main() -> Result<()> {
         let args = Cli::from_args();
 
         if args.print {
@@ -326,7 +331,7 @@ pub mod cli {
         Ok(())
     }
 }
-// cli:1 ends here
+// 07c944a2 ends here
 
 // [[file:../trajectory.note::*test][test:1]]
 #[test]

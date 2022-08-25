@@ -9,7 +9,7 @@ use std::path::Path;
 
 // [[file:../trajectory.note::*atom][atom:1]]
 #[derive(Debug, Default, Clone)]
-pub struct AtomData {
+pub struct AtomData{
     pub index: usize,
     pub symbol: String,
     pub neighbors: Vec<usize>,
@@ -19,7 +19,7 @@ pub struct AtomData {
 
 impl AtomData {
     pub fn new() -> Self {
-        let ns: Vec<usize> = Vec::new();
+        let ns:Vec<usize> = Vec::new();
 
         AtomData {
             index: 0,
@@ -35,13 +35,13 @@ impl AtomData {
 // [[file:../trajectory.note::ec36c72e-4d04-447e-bd3d-bd4c6c3c49bb][ec36c72e-4d04-447e-bd3d-bd4c6c3c49bb]]
 // data structure for a single frame
 pub struct TrajectoryFrame {
-    pub timestep: usize, // current timestep
-    pub natoms: usize,
-    pub cell: [[f64; 3]; 3],
-    pub cell_origin: [f64; 3],
-    pub symbols: HashMap<usize, String>,
-    pub positions: HashMap<usize, [f64; 3]>,
-    pub neighbors: HashMap<usize, Vec<usize>>,
+    pub timestep    : usize,            // current timestep
+    pub natoms      : usize,
+    pub cell        : [[f64; 3]; 3],
+    pub cell_origin : [f64; 3],
+    pub symbols     : HashMap<usize, String>,
+    pub positions   : HashMap<usize, [f64; 3]>,
+    pub neighbors   : HashMap<usize, Vec<usize>>,
 }
 // ec36c72e-4d04-447e-bd3d-bd4c6c3c49bb ends here
 
@@ -49,32 +49,34 @@ pub struct TrajectoryFrame {
 impl TrajectoryFrame {
     pub fn new() -> Self {
         let positions: HashMap<usize, [f64; 3]> = HashMap::new();
-        let symbols: HashMap<usize, String> = HashMap::new();
+        let symbols  : HashMap<usize, String> = HashMap::new();
         let cell = [[0_f64; 3]; 3];
         let neighbors: HashMap<usize, Vec<usize>> = HashMap::new();
 
         TrajectoryFrame {
-            timestep: 0,
-            natoms: 0,
-            positions: positions,
-            symbols: symbols,
-            cell: cell,
-            cell_origin: [0_f64; 3],
-            neighbors: neighbors,
+            timestep    : 0,
+            natoms      : 0,
+            positions   : positions,
+            symbols     : symbols,
+            cell        : cell,
+            cell_origin : [0_f64; 3],
+            neighbors   : neighbors,
         }
     }
 }
 // 8a0cf3ff-227f-493b-aa5e-20ac3cac8f5c ends here
 
 // [[file:../trajectory.note::*src][src:1]]
+use cgmath::{Vector3, Matrix3, Point3, Deg};
 use cgmath::prelude::*;
-use cgmath::{Deg, Matrix3, Point3, Vector3};
 
-fn cart_to_frac(matrix: Matrix3<f64>, coordinates: Vec<Vector3<f64>>) -> Vec<Vector3<f64>> {
+fn cart_to_frac(matrix: Matrix3<f64>,
+                coordinates: Vec<Vector3<f64>>) -> Vec<Vector3<f64>>
+{
     let mut fractional = Vec::new();
     let inv = matrix.transpose().invert().unwrap();
     for v in coordinates {
-        fractional.push(inv * v);
+        fractional.push(inv*v);
     }
 
     fractional
@@ -84,7 +86,11 @@ fn cart_to_frac(matrix: Matrix3<f64>, coordinates: Vec<Vector3<f64>>) -> Vec<Vec
 // [[file:../trajectory.note::c57f4ca0-4e68-4e30-a91b-7cbd47b7071c][c57f4ca0-4e68-4e30-a91b-7cbd47b7071c]]
 use std::f64;
 
-fn get_nearest_image(cell: Matrix3<f64>, position1: Point3<f64>, position2: Point3<f64>) -> (Vector3<f64>, f64) {
+fn get_nearest_image(
+    cell: Matrix3<f64>,
+    position1: Point3<f64>,
+    position2: Point3<f64>) -> (Vector3<f64>, f64)
+{
     let d = position1.distance(position2);
 
     // loop 27 possible point images
@@ -94,7 +100,7 @@ fn get_nearest_image(cell: Matrix3<f64>, position1: Point3<f64>, position2: Poin
     for x in relevant_images.iter() {
         for y in relevant_images.iter() {
             for z in relevant_images.iter() {
-                let p = position2 + (*x as f64) * cell.x + (*y as f64) * cell.y + (*z as f64) * cell.z;
+                let p = position2 + (*x as f64)*cell.x + (*y as f64)*cell.y + (*z as f64)*cell.z;
                 let d = position1.distance(p);
                 if d < distance {
                     distance = d;
@@ -111,22 +117,24 @@ fn get_nearest_image(cell: Matrix3<f64>, position1: Point3<f64>, position2: Poin
 
 #[test]
 fn test_get_nearest_image() {
-    let mat1 = Matrix3::new(5.09, 0.00, 0.00, 0.00, 6.74, 0.00, 0.00, 0.00, 4.53);
+    let mat1 = Matrix3::new(5.09, 0.00, 0.00,
+                            0.00, 6.74, 0.00,
+                            0.00, 0.00, 4.53);
 
-    let p1 = Point3::new(0.18324000, 1.68500000, 3.85050000);
-    let p13 = Point3::new(4.53010000, 1.68500000, 2.03850000);
-    let p10 = Point3::new(0.94674000, 2.94538000, 1.48584000);
+    let p1  = Point3::new(0.18324000,   1.68500000,   3.85050000);
+    let p13 = Point3::new(4.53010000,   1.68500000,   2.03850000);
+    let p10 = Point3::new(0.94674000,   2.94538000,   1.48584000);
     let dp1_13 = 1.95847;
     let dp1_10 = 2.61920;
 
     let (image, d) = get_nearest_image(mat1, p1, p13);
-    assert_relative_eq!(d, dp1_13, epsilon = 1e-4);
-    assert_relative_eq!(image.x, -1.0, epsilon = 1e-4);
-    assert_relative_eq!(image.y, 0.0, epsilon = 1e-4);
-    assert_relative_eq!(image.z, 0.0, epsilon = 1e-4);
+    assert_relative_eq!(d, dp1_13, epsilon=1e-4);
+    assert_relative_eq!(image.x, -1.0, epsilon=1e-4);
+    assert_relative_eq!(image.y, 0.0, epsilon=1e-4);
+    assert_relative_eq!(image.z, 0.0, epsilon=1e-4);
 
     let (image, d) = get_nearest_image(mat1, p1, p10);
-    assert_relative_eq!(d, dp1_10, epsilon = 1e-4);
+    assert_relative_eq!(d, dp1_10, epsilon=1e-4);
 }
 // c57f4ca0-4e68-4e30-a91b-7cbd47b7071c ends here
 
@@ -148,7 +156,9 @@ fn cell_vectors_to_parameters(matrix: Matrix3<f64>) -> (f64, f64, f64, f64, f64,
 #[test]
 fn test_cell() {
     // ovito/tests/files/LAMMPS/multi_sequence_1.dump
-    let mat1 = Matrix3::new(5.09, 0.00, 0.00, 0.00, 6.74, 0.00, 0.00, 0.00, 4.53);
+    let mat1 = Matrix3::new(5.09, 0.00, 0.00,
+                            0.00, 6.74, 0.00,
+                            0.00, 0.00, 4.53);
     let inv = mat1.transpose().invert().unwrap();
 
     let v1 = Vector3::new(2.1832, 1.6850, 3.8505);
@@ -156,27 +166,29 @@ fn test_cell() {
     let v3 = Vector3::new(4.3618, 5.0550, 1.5855);
 
     let fracs = cart_to_frac(mat1, vec![v1, v2, v3]);
-    assert_relative_eq!(fracs[0].x, 0.4289, epsilon = 1e-3);
-    assert_relative_eq!(fracs[0].y, 0.2500, epsilon = 1e-3);
-    assert_relative_eq!(fracs[0].z, 0.8500, epsilon = 1e-3);
-    assert_relative_eq!(fracs[1].x, 1.3569, epsilon = 1e-3);
-    assert_relative_eq!(fracs[2].z, 0.3500, epsilon = 1e-3);
+    assert_relative_eq!(fracs[0].x, 0.4289, epsilon=1e-3);
+    assert_relative_eq!(fracs[0].y, 0.2500, epsilon=1e-3);
+    assert_relative_eq!(fracs[0].z, 0.8500, epsilon=1e-3);
+    assert_relative_eq!(fracs[1].x, 1.3569, epsilon=1e-3);
+    assert_relative_eq!(fracs[2].z, 0.3500, epsilon=1e-3);
 
-    let mat2 = Matrix3::new(15.3643, 0.0, 0.0, 4.5807, 15.5026, 0.0, 0.0, 0.0, 17.4858);
+    let mat2 = Matrix3::new(15.3643, 0.0, 0.0,
+                            4.5807, 15.5026, 0.0,
+                            0.0, 0.0, 17.4858);
 
     let (a, b, c, alpha, beta, gamma) = cell_vectors_to_parameters(mat2);
-    assert_relative_eq!(a, 15.3643, epsilon = 1e-4);
-    assert_relative_eq!(b, 16.1652, epsilon = 1e-4);
-    assert_relative_eq!(c, 17.4858, epsilon = 1e-4);
+    assert_relative_eq!(a, 15.3643, epsilon=1e-4);
+    assert_relative_eq!(b, 16.1652, epsilon=1e-4);
+    assert_relative_eq!(c, 17.4858, epsilon=1e-4);
 
-    assert_relative_eq!(alpha, 90.0, epsilon = 1e-4);
-    assert_relative_eq!(beta, 90.0, epsilon = 1e-4);
-    assert_relative_eq!(gamma, 73.5386, epsilon = 1e-4);
+    assert_relative_eq!(alpha, 90.0, epsilon=1e-4);
+    assert_relative_eq!(beta, 90.0, epsilon=1e-4);
+    assert_relative_eq!(gamma, 73.5386, epsilon=1e-4);
 }
 // 9cab3b07-9781-48cd-a6fb-e6ee248b93dd ends here
 
 // [[file:../trajectory.note::fb3fb6d8-9ae3-4b29-a7c6-92c61776c867][fb3fb6d8-9ae3-4b29-a7c6-92c61776c867]]
-pub fn write_as_cif(frame: TrajectoryFrame, path: &Path) -> Result<(), Box<Error>> {
+pub fn write_as_cif(frame: TrajectoryFrame, path: &Path) -> Result<(), Box<dyn Error>>{
     let mut lines = String::new();
 
     // meta inforation
@@ -191,17 +203,15 @@ pub fn write_as_cif(frame: TrajectoryFrame, path: &Path) -> Result<(), Box<Error
     lines.push_str("loop_\n");
     lines.push_str("_symmetry_equiv_pos_as_xyz\n");
     lines.push_str(" x,y,z\n");
-    let cell = Matrix3::new(
-        frame.cell[0][0],
-        frame.cell[0][1],
-        frame.cell[0][2],
-        frame.cell[1][0],
-        frame.cell[1][1],
-        frame.cell[1][2],
-        frame.cell[2][0],
-        frame.cell[2][1],
-        frame.cell[2][2],
-    );
+    let cell = Matrix3::new(frame.cell[0][0],
+                            frame.cell[0][1],
+                            frame.cell[0][2],
+                            frame.cell[1][0],
+                            frame.cell[1][1],
+                            frame.cell[1][2],
+                            frame.cell[2][0],
+                            frame.cell[2][1],
+                            frame.cell[2][2]);
     let (a, b, c, alpha, beta, gamma) = cell_vectors_to_parameters(cell);
 
     lines.push_str(&format!("_cell_length_a     {:10.4}\n", a));
@@ -221,12 +231,12 @@ pub fn write_as_cif(frame: TrajectoryFrame, path: &Path) -> Result<(), Box<Error
     lines.push_str("_atom_site_fract_z\n");
 
     let cell_origin = Vector3::new(frame.cell_origin[0], frame.cell_origin[1], frame.cell_origin[2]);
-    for index in 1..(frame.natoms + 1) {
+    for index in 1..(frame.natoms+1) {
         let position = frame.positions.get(&index).unwrap();
         let symbol = frame.symbols.get(&index).unwrap();
         let name = format!("{}{}", symbol, index);
         let coords = Vector3::new(position[0], position[1], position[2]) - cell_origin;
-        let v = cell.transpose().invert().unwrap() * coords;
+        let v = cell.transpose().invert().unwrap()*coords;
         let s = format!("{:4}{:6}{:12.5}{:12.5}{:12.5}\n", symbol, name, v.x, v.y, v.z);
         lines.push_str(&s);
     }
@@ -239,7 +249,7 @@ pub fn write_as_cif(frame: TrajectoryFrame, path: &Path) -> Result<(), Box<Error
         lines.push_str("_geom_bond_distance\n");
         lines.push_str("_geom_bond_site_symmetry_2\n");
         lines.push_str("_ccdc_geom_bond_type\n");
-        for current in 1..(frame.natoms + 1) {
+        for current in 1..(frame.natoms+1) {
             let symbol1 = frame.symbols.get(&current).unwrap();
             let name1 = format!("{}{}", symbol1, current);
             let p1 = frame.positions.get(&current).unwrap();
@@ -288,6 +298,7 @@ fn get_image_symcode(image: Vector3<f64>) -> String {
     symcode
 }
 
+
 #[test]
 fn test_get_image_symcode() {
     let v = Vector3::new(1., 0., 0.);
@@ -325,10 +336,10 @@ fn test_wirte_cif() {
 // tests:1 ends here
 
 // [[file:../trajectory.note::*atom basis][atom basis:1]]
-use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
+use std::cmp::Ordering;
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive (Default, Debug, Clone, Copy)]
 /// simple atom data structure
 pub struct Atom {
     pub index: u64,
@@ -363,10 +374,20 @@ impl PartialOrd for Atom {
 
 #[test]
 fn test_atom() {
-    let a = Atom { index: 1, symbol: "H" };
+    let a = Atom{
+        index: 1,
+        symbol: "H",
+    };
 
-    let b = Atom { index: 2, symbol: "H" };
-    let mut c = Atom { index: 1, symbol: "H" };
+    let b = Atom {
+        index: 2,
+        symbol: "H",
+
+    };
+    let mut c = Atom {
+        index: 1,
+        symbol: "H",
+    };
 
     assert!(a != b);
     assert!(a == c);
@@ -417,10 +438,10 @@ pub fn get_reduced_formula(symbols: &[&str]) -> String {
 
 #[test]
 fn test_formula() {
-    let symbols = vec!["C", "H", "C", "H", "H", "H"];
+    let symbols   = vec!["C", "H", "C", "H", "H", "H"];
     let formula = get_reduced_formula(&symbols);
     assert!(formula == "C2H4".to_string());
-    let symbols = vec!["C", "H", "C", "H", "H", "O", "H", "O"];
+    let symbols   = vec!["C", "H", "C", "H", "H", "O", "H", "O"];
     let formula = get_reduced_formula(&symbols);
     println!("{:?}", formula);
     assert!(formula == "C2O2H4".to_string());

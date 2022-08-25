@@ -4,13 +4,12 @@
 #![feature(seek_stream_len)]
 
 #[cfg(test)]
-#[macro_use]
-extern crate approx;
+#[macro_use] extern crate approx;
 
 use std::collections::HashMap;
 // imports:1 ends here
 
-// [[file:../trajectory.note::*mods][mods:1]]
+// [[file:../trajectory.note::16fef675][16fef675]]
 mod atoms;
 mod graph;
 mod lammps;
@@ -26,7 +25,7 @@ pub mod common {
     pub use gut::prelude::*;
 }
 use common::*;
-// mods:1 ends here
+// 16fef675 ends here
 
 // [[file:../trajectory.note::*exports][exports:1]]
 pub use lammps::{analyze_frames, extract_frame};
@@ -44,7 +43,7 @@ pub struct Frame {
 }
 
 impl Frame {
-    pub fn new() -> Frame {
+    pub fn new() -> Frame{
         let map1: HashMap<String, usize> = HashMap::new();
         let map2: HashMap<usize, [f64; 3]> = HashMap::new();
 

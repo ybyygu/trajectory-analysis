@@ -1,8 +1,8 @@
-# [[file:trajectory.note::*cargo.toml][cargo.toml:1]]
+# [[file:trajectory.note::fa80d52c][fa80d52c]]
 [package]
 name = "trajectory-analysis"
 version = "0.2.0"
-edition = "2018"
+edition = "2021"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
 [dependencies]
@@ -25,4 +25,4 @@ cgmath = "0.18"                 # TODO: remove
 
 [dev-dependencies]
 approx = "0.3"
-# cargo.toml:1 ends here
+# fa80d52c ends here
