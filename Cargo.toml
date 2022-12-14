@@ -32,4 +32,9 @@ adhoc = []
 
 [dev-dependencies]
 approx = "0.3"
+criterion = "0.4"
+
+[[bench]]
+name = "my_benchmark"
+harness = false
 # fa80d52c ends here

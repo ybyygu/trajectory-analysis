@@ -13,6 +13,7 @@
 // mod lammps;
 // mod lindemann;
 mod part;
+mod xyztraj;
 // mod topo;
 
 // pub mod adhoc;
@@ -42,10 +43,21 @@ pub mod docs {
     }
 
     export_doc!(part);
+    export_doc!(xyztraj);
 }
 // 61448511 ends here
 
 // [[file:../trajectory.note::fe8af640][fe8af640]]
+#[cfg(feature = "adhoc")]
+#[inline]
+pub fn fibonacci(n: u64) -> u64 {
+    match n {
+        0 => 1,
+        1 => 1,
+        n => fibonacci(n - 1) + fibonacci(n - 2),
+    }
+}
+
 // pub use lammps::{analyze_frames, extract_frame};
 // pub use lindemann::cli::enter_main as lindemann_cli;
 // pub use topo::topo_cli;

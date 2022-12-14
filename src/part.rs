@@ -63,7 +63,19 @@ pub fn write_connection_dataframe_parquet(mols: impl Iterator<Item = Molecule>, 
         let row_group = get_neighbor_data(&mol, i);
         writer.write_row_group(row_group.as_slice())?;
     }
+    writer.close()?;
 
     Ok(())
 }
 // c35cdbe7 ends here
+
+// [[file:../trajectory.note::769874b9][769874b9]]
+#[test]
+fn test_write_connect() -> Result<()> {
+    let molfile = "data/55/798fcc-6c7a-424f-8c87-7e8b11300345/SiAlCaO1800k.xyz";
+    let mols = gchemol::io::read(molfile)?;
+    write_connection_dataframe_parquet(mols, "/tmp/a.parquet".as_ref())?;
+
+    Ok(())
+}
+// 769874b9 ends here
