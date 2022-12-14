@@ -5,8 +5,6 @@
 
 #[cfg(test)]
 #[macro_use] extern crate approx;
-
-use std::collections::HashMap;
 // imports:1 ends here
 
 // [[file:../trajectory.note::16fef675][16fef675]]
@@ -21,7 +19,10 @@ mod part;
 // pub mod lammps_;
 // pub mod xyz;
 
-pub mod common {
+mod common {
+    pub use std::collections::HashMap;
+    pub use std::path::{Path, PathBuf};
+
     pub use gut::cli::*;
     pub use gut::prelude::*;
 }
