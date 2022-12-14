@@ -188,7 +188,7 @@ fn test_cell() {
 // 9cab3b07-9781-48cd-a6fb-e6ee248b93dd ends here
 
 // [[file:../trajectory.note::fb3fb6d8-9ae3-4b29-a7c6-92c61776c867][fb3fb6d8-9ae3-4b29-a7c6-92c61776c867]]
-pub fn write_as_cif(frame: TrajectoryFrame, path: &Path) -> Result<(), Box<Error>>{
+pub fn write_as_cif(frame: TrajectoryFrame, path: &Path) -> Result<(), Box<dyn Error>>{
     let mut lines = String::new();
 
     // meta inforation

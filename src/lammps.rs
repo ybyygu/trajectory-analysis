@@ -1,6 +1,4 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
+// [[file:../trajectory.note::*imports][imports:1]]
 use std::fs::File;
 use std::error::Error;
 use std::io::{self, BufReader, BufWriter};
@@ -16,15 +14,8 @@ use crate::Frame;
 use crate::graph::fragments_from_atoms;
 // imports:1 ends here
 
-// extract frame structure
-// 提出特定frame对应的结构, 生成cif文件.
-// - 元素信息: symbols
-// - 键连信息: bonds
-// - 结构信息: dump, cell
-
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*extract frame structure][extract frame structure:1]]
-pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> Result<(), Box<Error>>
+// [[file:../trajectory.note::4e65db51][4e65db51]]
+pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> Result<(), Box<dyn Error>>
 {
     // 1. guess required lammps files from input filename
     let path = Path::new(filename);
@@ -61,19 +52,17 @@ pub fn extract_frame(filename: &str, target_timestep: usize, ciffile: &str) -> R
 
     Ok(())
 }
-// extract frame structure:1 ends here
+// 4e65db51 ends here
 
-// fragment analysis
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*fragment analysis][fragment analysis:1]]
-pub fn analyze_frames(filename: &str, outfile: &str, maxcols: usize) -> Result<(), Box<Error>>{
+// [[file:../trajectory.note::99b1b36e][99b1b36e]]
+pub fn analyze_frames(filename: &str, outfile: &str, maxcols: usize) -> Result<(), Box<dyn Error>>{
     let frames = parse_lammps_files(filename)?;
     write_formated_text(&frames, outfile, maxcols)?;
 
     Ok(())
 }
 
-fn parse_lammps_files(filename: &str) -> Result<Vec<Frame>, Box<Error>> {
+fn parse_lammps_files(filename: &str) -> Result<Vec<Frame>, Box<dyn Error>> {
     // 1. guess required lammps files from input filename
     let path = Path::new(filename);
     let path_lammps_data = path.with_extension("data");
@@ -99,7 +88,7 @@ fn parse_lammps_files(filename: &str) -> Result<Vec<Frame>, Box<Error>> {
     frames
 }
 
-fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -> Result<(), Box<Error>>{
+fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -> Result<(), Box<dyn Error>>{
     // create output file
     let f = File::create(outfile)?;
     let mut writer = BufWriter::new(f);
@@ -140,16 +129,11 @@ fn write_formated_text(frames: &Vec<Frame>, outfile: &str, max_columns: usize) -
 
     Ok(())
 }
-// fragment analysis:1 ends here
+// 99b1b36e ends here
 
-// src
-// - 关键信息: 所有原子对应的元素类型.
-// - 数据类型选择HashMap, key为index, value为元素符号
-
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*src][src:1]]
+// [[file:../trajectory.note::6cd99277][6cd99277]]
 /// read data from lammps .data file
-fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<Error>>
+fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<dyn Error>>
 {
     eprintln!("reading data file: {}", path.display());
 
@@ -178,7 +162,7 @@ fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<Err
     let mut natoms = 0;
     if let Some(line) = lines_iter.next() {
         let line = line?;
-        assert!(line.contains(" atoms"), format!("cannot find number of atoms: {}", line));
+        assert!(line.contains(" atoms"), "cannot find number of atoms: {}", line);
         let mut attrs = line.split_whitespace();
         if let Some(s) = attrs.nth(0) {
             natoms = s.parse().unwrap();
@@ -266,11 +250,9 @@ fn parse_lammps_data_file(path: &Path) -> Result<HashMap<usize, String>, Box<Err
 
     Ok(symbols)
 }
-// src:1 ends here
+// 6cd99277 ends here
 
-// test
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*test][test:1]]
+// [[file:../trajectory.note::*test][test:1]]
 #[test]
 #[ignore]
 fn test_parse_data_file() {
@@ -281,12 +263,9 @@ fn test_parse_data_file() {
 }
 // test:1 ends here
 
-// src
-// #+name: daedfe6b-34ed-4dd1-94a2-4e698a00a42c
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::daedfe6b-34ed-4dd1-94a2-4e698a00a42c][daedfe6b-34ed-4dd1-94a2-4e698a00a42c]]
+// [[file:../trajectory.note::daedfe6b-34ed-4dd1-94a2-4e698a00a42c][daedfe6b-34ed-4dd1-94a2-4e698a00a42c]]
 fn get_frame_from_lammps_dump_file
-    (path: &Path, target_timestep: usize) -> Result<TrajectoryFrame, Box<Error>>
+    (path: &Path, target_timestep: usize) -> Result<TrajectoryFrame, Box<dyn Error>>
 {
     eprintln!("reading dump file: {}", path.display());
 
@@ -305,7 +284,7 @@ fn get_frame_from_lammps_dump_file
             eprintln!("reached the end of the file: {}", path.display());
             break;
         }
-        assert!(buf.starts_with("ITEM: TIMESTEP"), format!("Expect the frame header, but: {}", buf));
+        assert!(buf.starts_with("ITEM: TIMESTEP"), "Expect the frame header, but: {}", buf);
 
         // 1. get current timestep
         buf.clear();
@@ -329,7 +308,7 @@ fn get_frame_from_lammps_dump_file
         }
 
         // 3. get lammps box and atoms
-        assert!(natoms > 0, buf);
+        assert!(natoms > 0, "{}", buf);
         println!("current timestep = {:?}", timestep);
         if timestep < target_timestep {
             for _ in 0..(natoms + 5) {
@@ -376,10 +355,7 @@ fn get_frame_from_lammps_dump_file
 }
 // daedfe6b-34ed-4dd1-94a2-4e698a00a42c ends here
 
-// tests
-// #+name: 69313c0d-d969-40b4-a338-ff274407d54d
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::69313c0d-d969-40b4-a338-ff274407d54d][69313c0d-d969-40b4-a338-ff274407d54d]]
+// [[file:../trajectory.note::*tests][tests:1]]
 #[test]
 #[ignore]
 fn test_parse_lammps_dump_file() {
@@ -389,12 +365,9 @@ fn test_parse_lammps_dump_file() {
     let frame = get_frame_from_lammps_dump_file(&path, 200_usize).unwrap();
     println!("{:?}", frame.positions);
 }
-// 69313c0d-d969-40b4-a338-ff274407d54d ends here
+// tests:1 ends here
 
-// src
-// #+name: 32374d0e-1d81-4ec0-a8b3-0fb7950a625a
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::32374d0e-1d81-4ec0-a8b3-0fb7950a625a][32374d0e-1d81-4ec0-a8b3-0fb7950a625a]]
+// [[file:../trajectory.note::ae9f867a][ae9f867a]]
 use std::f64;
 
 enum BoxStyle {
@@ -402,14 +375,14 @@ enum BoxStyle {
     Triclinic,
 }
 
-fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<Error>>{
+fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<dyn Error>> {
     use self::BoxStyle::{Orthogonal, Triclinic};
 
     let mut lines_iter = txt.lines();
 
-    let mut hi    = [0.0; 3];
-    let mut lo    = [0.0; 3];
-    let mut tilt  = [0.0; 3];
+    let mut hi = [0.0; 3];
+    let mut lo = [0.0; 3];
+    let mut tilt = [0.0; 3];
     let mut style = Orthogonal;
 
     if let Some(line) = lines_iter.next() {
@@ -423,17 +396,17 @@ fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<Error
 
             for i in 0..3 {
                 if let Some(line) = lines_iter.next() {
-                    let mut attrs:Vec<f64> = line.split_whitespace().map(|x| x.parse::<f64>().unwrap()).collect();
+                    let mut attrs: Vec<f64> = line.split_whitespace().map(|x| x.parse::<f64>().unwrap()).collect();
                     match style {
                         Orthogonal => {
                             lo[i] = attrs[0];
                             hi[i] = attrs[1];
-                        },
+                        }
                         Triclinic => {
                             lo[i] = attrs[0];
                             hi[i] = attrs[1];
                             tilt[i] = attrs[2];
-                        },
+                        }
                     }
                 } else {
                     Err("lammps box is incomplete!")?;
@@ -457,15 +430,15 @@ fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<Error
             vb[1] = hi[1] - lo[1];
             vc[2] = hi[2] - lo[2];
             origin = lo;
-        },
-        Triclinic  => {
+        }
+        Triclinic => {
             let xy = tilt[0];
             let xz = tilt[1];
             let yz = tilt[2];
 
             // x vector
-            let xlo = lo[0] - [0.0, xy, xz, xy+xz].iter().fold(f64::MAX, |a, &b| a.min(b));
-            let xhi = hi[0] - [0.0, xy, xz, xy+xz].iter().fold(f64::MIN, |a, &b| a.max(b));
+            let xlo = lo[0] - [0.0, xy, xz, xy + xz].iter().fold(f64::MAX, |a, &b| a.min(b));
+            let xhi = hi[0] - [0.0, xy, xz, xy + xz].iter().fold(f64::MIN, |a, &b| a.max(b));
             va[0] = xhi - xlo;
             // y vector
             let ylo = lo[1] - [0.0, yz].iter().fold(f64::MAX, |a, &b| a.min(b));
@@ -479,17 +452,14 @@ fn get_lammps_dump_box(txt: &str) -> Result<([[f64; 3]; 3], [f64; 3]), Box<Error
             vc[1] = yz;
             vc[2] = zhi - zlo;
             origin = [xlo, ylo, zlo];
-        },
+        }
     }
 
     Ok(([va, vb, vc], origin))
 }
-// 32374d0e-1d81-4ec0-a8b3-0fb7950a625a ends here
+// ae9f867a ends here
 
-// tests
-// #+name: 398e563b-0ad5-4845-a5c3-97c115748e74
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::398e563b-0ad5-4845-a5c3-97c115748e74][398e563b-0ad5-4845-a5c3-97c115748e74]]
+// [[file:../trajectory.note::*tests][tests:1]]
 #[test]
 fn test_lammps_box() {
     let box1 = "ITEM: BOX BOUNDS pp pp pp
@@ -501,16 +471,16 @@ fn test_lammps_box() {
     let cell_vector1 = [11.525, 0.0, 0.0];
     let cell_vector2 = [0.0, 11.525, 0.0];
     let cell_vector3 = [0.0, 0.0, 11.525];
-    let cell_origin  = [-0.195983, -0.195983, -0.195983];
+    let cell_origin = [-0.195983, -0.195983, -0.195983];
 
     let (vts, origin) = get_lammps_dump_box(&box1).unwrap();
 
-    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon=1.0e-4);
+    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon = 1.0e-4);
 
     let box2 = "ITEM: BOX BOUNDS xy xz yz pp pp pp
 -0.08189 15.3282 -0.045807
@@ -521,16 +491,16 @@ fn test_lammps_box() {
     let cell_vector1 = [15.3643, 0.0, 0.0];
     let cell_vector2 = [-0.045807, 15.5026, 0.0];
     let cell_vector3 = [0.0, 0.0, 17.4858];
-    let cell_origin  = [-0.036083, 0.072939, 0.001924];
+    let cell_origin = [-0.036083, 0.072939, 0.001924];
 
     let (vts, origin) = get_lammps_dump_box(&box2).unwrap();
-    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[1][0], cell_vector2[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon=1.0e-4);
+    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[1][0], cell_vector2[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon = 1.0e-4);
 
     let box3 = "ITEM: BOX BOUNDS pp pp ff
 0.0000000000000000e+00 2.2931000000000001e+01
@@ -542,20 +512,17 @@ fn test_lammps_box() {
     let cell_vector3 = [0.0, 0.0, 51.498];
     let cell_origin = [0.0, 0.0, -1.0];
     let (vts, origin) = get_lammps_dump_box(&box3).unwrap();
-    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon=1.0e-4);
-    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon=1.0e-4);
+    assert_relative_eq!(vts[0][0], cell_vector1[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[1][1], cell_vector2[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(vts[2][2], cell_vector3[2] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[0], cell_origin[0] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[1], cell_origin[1] as f64, epsilon = 1.0e-4);
+    assert_relative_eq!(origin[2], cell_origin[2] as f64, epsilon = 1.0e-4);
 }
-// 398e563b-0ad5-4845-a5c3-97c115748e74 ends here
+// tests:1 ends here
 
-// src
-// #+name: dd0f9789-eb7f-492a-aa0d-24a76d346f76
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::dd0f9789-eb7f-492a-aa0d-24a76d346f76][dd0f9789-eb7f-492a-aa0d-24a76d346f76]]
-fn get_lammps_dump_positions(txt: &str, natoms: usize) -> Result<HashMap<usize, [f64; 3]>, Box<Error>>{
+// [[file:../trajectory.note::dd0f9789-eb7f-492a-aa0d-24a76d346f76][dd0f9789-eb7f-492a-aa0d-24a76d346f76]]
+fn get_lammps_dump_positions(txt: &str, natoms: usize) -> Result<HashMap<usize, [f64; 3]>, Box<dyn Error>>{
     let mut lines_iter = txt.lines();
     let prefix = "ITEM: ATOMS";
 
@@ -576,7 +543,7 @@ fn get_lammps_dump_positions(txt: &str, natoms: usize) -> Result<HashMap<usize, 
     for _ in 0..natoms {
         if let Some(line) = lines_iter.next() {
             let mut attrs:Vec<_> = line.split_whitespace().collect();
-            assert!(attrs.len() == labels.len(), line.to_string());
+            assert!(attrs.len() == labels.len(), "{:?}", line.to_string());
             let mut index = 0_usize;
             let mut x = 0_f64;
             let mut y = 0_f64;
@@ -600,9 +567,7 @@ fn get_lammps_dump_positions(txt: &str, natoms: usize) -> Result<HashMap<usize, 
 }
 // dd0f9789-eb7f-492a-aa0d-24a76d346f76 ends here
 
-// tests
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*tests][tests:1]]
+// [[file:../trajectory.note::*tests][tests:1]]
 #[test]
 fn test_parse_dump_positions() {
     let txt = "ITEM: ATOMS id type x y z
@@ -630,12 +595,9 @@ fn test_parse_dump_positions() {
 }
 // tests:1 ends here
 
-// on file basis
-// #+name: 8497df51-3eb3-41fc-a87d-c1688c94c29f
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::8497df51-3eb3-41fc-a87d-c1688c94c29f][8497df51-3eb3-41fc-a87d-c1688c94c29f]]
+// [[file:../trajectory.note::8497df51-3eb3-41fc-a87d-c1688c94c29f][8497df51-3eb3-41fc-a87d-c1688c94c29f]]
 fn get_connectivity_from_terse_bonds_file
-    (path: &Path, target_timestep: usize) -> Result<HashMap<usize, Vec<usize>>, Box<Error>>
+    (path: &Path, target_timestep: usize) -> Result<HashMap<usize, Vec<usize>>, Box<dyn Error>>
 {
     eprintln!("reading bonds file: {}", path.display());
 
@@ -698,13 +660,9 @@ fn get_connectivity_from_terse_bonds_file
 }
 // 8497df51-3eb3-41fc-a87d-c1688c94c29f ends here
 
-
-
-// #+name: 1cb4fcf1-d093-41ce-a011-f88a95c9bf7b
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::1cb4fcf1-d093-41ce-a011-f88a95c9bf7b][1cb4fcf1-d093-41ce-a011-f88a95c9bf7b]]
+// [[file:../trajectory.note::1cb4fcf1-d093-41ce-a011-f88a95c9bf7b][1cb4fcf1-d093-41ce-a011-f88a95c9bf7b]]
 fn parse_terse_bonds_file (path: &Path, symbols: &HashMap<usize, String>)
-                           -> Result<Vec<Frame>, Box<Error>>
+                           -> Result<Vec<Frame>, Box<dyn Error>>
 {
     // create file handler and a buffle reader
     let fp = File::open(path)?;
@@ -736,20 +694,10 @@ fn parse_terse_bonds_file (path: &Path, symbols: &HashMap<usize, String>)
 }
 // 1cb4fcf1-d093-41ce-a011-f88a95c9bf7b ends here
 
-// on frame basis
-// 读入不同原子对应的电荷及connectivity.
-// 简化版中:
-// - 以行数来定原子index.
-// - 第一列为浮点数, 对应partial charge
-// - 其后几列为与当前原子直接成键的所有原子对应的编号数据. 该数据为键连原子编号与当
-//   前原子编号之差, 即index - current
-
-// #+name: dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198][dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198]]
+// [[file:../trajectory.note::dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198][dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198]]
 fn get_connectivity_from_terse_bonds_file_frame(
     txt: &str,
-    natoms: usize) -> Result<HashMap<usize, Vec<usize>>, Box<Error>>
+    natoms: usize) -> Result<HashMap<usize, Vec<usize>>, Box<dyn Error>>
 {
     let mut neighbors = HashMap::new();
 
@@ -772,11 +720,7 @@ fn get_connectivity_from_terse_bonds_file_frame(
 }
 // dd3a4020-2ed5-4c62-a6f7-1d80e0fc6198 ends here
 
-
-
-// #+name: b88e850d-3754-49fe-a0a6-cdf0ba8e2169
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::b88e850d-3754-49fe-a0a6-cdf0ba8e2169][b88e850d-3754-49fe-a0a6-cdf0ba8e2169]]
+// [[file:../trajectory.note::b88e850d-3754-49fe-a0a6-cdf0ba8e2169][b88e850d-3754-49fe-a0a6-cdf0ba8e2169]]
 #[test]
 fn test_get_connectivity_from_terse_bonds_frame() {
     let txt = "0.007 8 9 16 896 1017 1016 905 904 120 121 1 112 128
@@ -795,14 +739,10 @@ fn test_get_connectivity_from_terse_bonds_frame() {
 }
 // b88e850d-3754-49fe-a0a6-cdf0ba8e2169 ends here
 
-
-
-// #+name: 5f005858-636b-4d77-aca5-e6be1baca10a
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::5f005858-636b-4d77-aca5-e6be1baca10a][5f005858-636b-4d77-aca5-e6be1baca10a]]
+// [[file:../trajectory.note::5f005858-636b-4d77-aca5-e6be1baca10a][5f005858-636b-4d77-aca5-e6be1baca10a]]
 fn parse_terse_bonds_file_single_frame<I> (
     lines_iter: &mut I,
-    symbols: &HashMap<usize, String>) -> Result<Frame, Box<Error>>
+    symbols: &HashMap<usize, String>) -> Result<Frame, Box<dyn Error>>
     where I: Iterator<Item=io::Result<String>>,
 {
     // 1. read current timestep
@@ -857,10 +797,7 @@ fn parse_terse_bonds_file_single_frame<I> (
 }
 // 5f005858-636b-4d77-aca5-e6be1baca10a ends here
 
-// on line basis
-// #+name: 39637608-12b2-4724-ac38-cfc5d4f9c990
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::39637608-12b2-4724-ac38-cfc5d4f9c990][39637608-12b2-4724-ac38-cfc5d4f9c990]]
+// [[file:../trajectory.note::39637608-12b2-4724-ac38-cfc5d4f9c990][39637608-12b2-4724-ac38-cfc5d4f9c990]]
 fn parse_terse_bonds_file_single_line(line: &str) -> (f64, Vec<usize>) {
     let mut attrs = line.split_whitespace();
     let first = attrs.nth(0).unwrap();
@@ -871,11 +808,7 @@ fn parse_terse_bonds_file_single_line(line: &str) -> (f64, Vec<usize>) {
 }
 // 39637608-12b2-4724-ac38-cfc5d4f9c990 ends here
 
-
-
-// #+name: b0d25b51-fbb3-460a-882f-3cdb7c6f6619
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::b0d25b51-fbb3-460a-882f-3cdb7c6f6619][b0d25b51-fbb3-460a-882f-3cdb7c6f6619]]
+// [[file:../trajectory.note::b0d25b51-fbb3-460a-882f-3cdb7c6f6619][b0d25b51-fbb3-460a-882f-3cdb7c6f6619]]
 #[test]
 fn test_parse_terse_bonds_line() {
     let s = "0.007 8 9 16 896 1017 1016 905 904 120 121 1 112 128";
@@ -886,17 +819,12 @@ fn test_parse_terse_bonds_line() {
 }
 // b0d25b51-fbb3-460a-882f-3cdb7c6f6619 ends here
 
-// on file basis
-// 处理文件级别的逻辑
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*on file basis][on file basis:1]]
+// [[file:../trajectory.note::49a62c94][49a62c94]]
 /// Parameters
 /// ----------
 /// inputfile: the path of a .bonds file
 /// outputfile: the path of the output file
-fn create_terse_copy_of_lammps_bonds_file
-    (inputfile: &Path, outputfile: &Path) -> Result<String, Box<Error>>
-{
+fn create_terse_copy_of_lammps_bonds_file(inputfile: &Path, outputfile: &Path) -> Result<String, Box<dyn Error>> {
     // 1.0 prepare input file stream
     let mut fp = File::open(inputfile)?;
     let reader = BufReader::new(fp);
@@ -921,7 +849,7 @@ fn create_terse_copy_of_lammps_bonds_file
         let output = parse_lammps_bonds_single_snapshot(&mut lines_iter).unwrap();
         writer.write_all(&output.as_bytes());
         if let Some(line) = lines_iter.next() {
-            ;
+            //
         } else {
             println!("Warning: missing final blank comment.");
             break;
@@ -930,12 +858,9 @@ fn create_terse_copy_of_lammps_bonds_file
 
     Ok("done".to_string())
 }
-// on file basis:1 ends here
+// 49a62c94 ends here
 
-// on frame basis
-// 处理轨迹中单一帧
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*on frame basis][on frame basis:1]]
+// [[file:../trajectory.note::1ef98518][1ef98518]]
 use std::iter::Peekable;
 
 fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, String>
@@ -950,7 +875,7 @@ fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, S
     // expected => Some(Ok("# Timestep 0 "))
     for n in 0..7 {
         let line = lines_iter.next().unwrap().unwrap();
-        assert!(line.starts_with("# "), line);
+        assert!(line.starts_with("# "), "{:?}", line);
         match n {
             0 => {
                 timestep = get_int_data_from_comment_line(&line, "# Timestep").unwrap();
@@ -1001,11 +926,9 @@ fn parse_lammps_bonds_single_snapshot<I>(lines_iter: &mut I) -> Result<String, S
 //     let mut file = File::create(&path).unwrap();
 //     file.write_all(output.as_bytes());
 // }
-// on frame basis:1 ends here
+// 1ef98518 ends here
 
-// 有陨版: 保留连接表, 不保留bond order
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*有陨版: 保留连接表, 不保留bond order][有陨版: 保留连接表, 不保留bond order:1]]
+// [[file:../trajectory.note::*有陨版: 保留连接表, 不保留bond order][有陨版: 保留连接表, 不保留bond order:1]]
 fn get_terse_line_from_bonds_data_line(line: &str) -> Result<(usize, String), String>{
     if line.starts_with("# ") {
         let msg = format!("incorrect line: {}", line);
@@ -1055,9 +978,7 @@ fn test_terse_line() {
 }
 // 有陨版: 保留连接表, 不保留bond order:1 ends here
 
-// functions parsing line
-
-// [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*functions parsing line][functions parsing line:1]]
+// [[file:../trajectory.note::*functions parsing line][functions parsing line:1]]
 fn get_int_data_from_comment_line(line: &str, prefix: &str) -> Result<usize, String> {
     if line.starts_with(prefix) {
         let s = line[prefix.len()..].trim().parse::<usize>();

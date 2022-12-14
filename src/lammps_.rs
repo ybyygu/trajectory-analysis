@@ -53,7 +53,7 @@ fn read_lammps_dump_file() {
 }
 // core:1 ends here
 
-// [[file:../trajectory.note::*meta][meta:1]]
+// [[file:../trajectory.note::ab635f81][ab635f81]]
 #[derive(Debug)]
 struct FrameData {
     timestep: usize,
@@ -89,7 +89,7 @@ ITEM: BOX BOUNDS pp pp pp
     assert_eq!(x.timestep, 0);
     assert_eq!(x.natoms, 537);
 }
-// meta:1 ends here
+// ab635f81 ends here
 
 // [[file:../trajectory.note::*src][src:1]]
 #[derive(Debug)]
@@ -191,7 +191,7 @@ fn read_atoms(input: &str, natoms: usize) -> IResult<&str, HashMap<usize, Lammps
 }
 // src:1 ends here
 
-// [[file:../trajectory.note::*tests][tests:1]]
+// [[file:../trajectory.note::e4081cd5][e4081cd5]]
 #[test]
 fn test_read_atoms() {
     let txt = "ITEM: ATOMS id type x y z c_eng c_cn c_cnt c_cna
@@ -224,9 +224,9 @@ fn test_read_atoms() {
     assert_eq!(m[&3].xyz[0], 2.361759901);
     assert_eq!(m[&3].type_id, 1);
 }
-// tests:1 ends here
+// e4081cd5 ends here
 
-// [[file:../trajectory.note::*frame][frame:1]]
+// [[file:../trajectory.note::1e08e749][1e08e749]]
 fn read_lammps_dump_frame(input: &str) -> IResult<&str, LammpsTrajectoryFrame> {
     let (rest, frame_data) = read_meta_data(input)?;
     let (rest, box_data) = read_box_data(rest)?;
@@ -252,9 +252,13 @@ fn test_parser() -> Result<()> {
     let frames: Vec<_> = parser.parse_file(fname, read_lammps_dump_frame).collect();
     assert_eq!(frames.len(), 3);
 
+    let fname = "tests/files/1.dump";
+    let frames: Vec<_> = parser.parse_file(fname, read_lammps_dump_frame).take(1).collect();
+    assert_eq!(frames.len(), 1);
+
     Ok(())
 }
-// frame:1 ends here
+// 1e08e749 ends here
 
 // [[file:../trajectory.note::*pub][pub:1]]
 /// Parse LAMMPS trajectory file (.dump), returning a list of frames.

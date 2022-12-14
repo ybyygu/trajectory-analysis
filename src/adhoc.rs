@@ -205,8 +205,8 @@ fn calculate_proton_diffusion_distribution(mol: &Molecule, w: f64, d: f64, lambd
 
 // [[file:../trajectory.note::*plot][plot:1]]
 fn plot_3d(z: Vec<Vec<f64>>, x: Vec<f64>, y: Vec<f64>) {
-    use plotly::*;
     use plotly::layout::Axis;
+    use plotly::*;
 
     let mut plot = Plot::new();
 

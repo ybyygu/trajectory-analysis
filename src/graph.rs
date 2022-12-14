@@ -3,8 +3,8 @@
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*imports][imports:1]]
 use std::collections::HashMap;
 
-use petgraph::prelude::*;
 use petgraph as pg;
+use petgraph::prelude::*;
 
 use crate::atoms::get_reduced_formula;
 use crate::atoms::AtomData;
@@ -13,8 +13,7 @@ use crate::atoms::AtomData;
 // fragments
 
 // [[file:~/Workspace/Programming/structure-predication/trajectory-analysis/trajectory.note::*fragments][fragments:1]]
-pub fn fragments_from_atoms(atoms: &Vec<AtomData>) -> HashMap<String, usize>
-{
+pub fn fragments_from_atoms(atoms: &Vec<AtomData>) -> HashMap<String, usize> {
     let mut graph = Graph::new_undirected();
 
     // add nodes
@@ -24,7 +23,7 @@ pub fn fragments_from_atoms(atoms: &Vec<AtomData>) -> HashMap<String, usize>
 
     // update edges
     for d in atoms {
-        let icurrent = NodeIndex::new(&d.index-1);
+        let icurrent = NodeIndex::new(&d.index - 1);
         for x in &d.neighbors {
             let iother = NodeIndex::new(x - 1);
             graph.update_edge(icurrent, iother, 1);

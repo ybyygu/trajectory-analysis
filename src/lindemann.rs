@@ -6,19 +6,21 @@ use crate::lammps_::*;
 use gut::prelude::*;
 // imports:1 ends here
 
-// [[file:../trajectory.note::*distances][distances:1]]
-fn calculate_distance_matrix(frame: &LammpsTrajectoryFrame) -> Vec<f64> {
+// [[file:../trajectory.note::a90d113a][a90d113a]]
+fn calculate_distance_matrix(frame: &LammpsTrajectoryFrame, settings: &config::Settings) -> Vec<f64> {
     let natoms = frame.atoms.len();
     debug!("dm: found {} atoms in frame {}", natoms, frame.timestep);
 
     // atom id counts from 1
-    let coords: Vec<[f64; 3]> = (1..natoms + 1)
-        .into_par_iter()
-        .map(|i| frame.atoms[&i].xyz.clone())
-        .collect();
+    // let coords: Vec<[f64; 3]> = (1..natoms + 1).into_par_iter().map(|i| frame.atoms[&i].xyz.clone()).collect();
 
-    let pairs: Vec<_> = (0..natoms).combinations(2).collect();
-    pairs
+    // atom id may be not counted from 1
+    let atom_ids = frame.atoms.keys().sorted().collect_vec();
+    let coords: Vec<[f64; 3]> = atom_ids.into_par_iter().map(|i| frame.atoms[&i].xyz.clone()).collect();
+
+    (0..natoms)
+        .combinations(2)
+        .collect_vec()
         .par_iter()
         .map(|p| {
             let i = p[0];
@@ -30,19 +32,24 @@ fn calculate_distance_matrix(frame: &LammpsTrajectoryFrame) -> Vec<f64> {
         })
         .collect()
 }
-// distances:1 ends here
+// a90d113a ends here
 
-// [[file:../trajectory.note::*com][com:1]]
+// [[file:../trajectory.note::dbce8505][dbce8505]]
 fn calculate_distances_center_of_mass(frame: &LammpsTrajectoryFrame, settings: &config::Settings) -> Vec<f64> {
     let natoms = frame.atoms.len();
     debug!("dm: found {} atoms in frame {}", natoms, frame.timestep);
 
-    let values: Vec<_> = (0..natoms)
+    // atom id may be not counted from 1
+    let atom_ids = frame.atoms.keys().sorted().collect_vec();
+
+    let values: Vec<_> = atom_ids
+        .iter()
         .map(|i| {
             // atom id counts from 1
-            let atom = &frame.atoms[&(i + 1)];
+            let atom = &frame.atoms[&i];
             let xyz = atom.xyz;
             // type id counts from 1
+            // FIXME: not safe
             let j = atom.type_id - 1;
             let data = &settings.atoms[j];
             (data.mass, xyz)
@@ -95,9 +102,9 @@ fn test_points_radii() {
     assert_relative_eq!(com[0], 1.845149, epsilon = 1e-4);
     assert_relative_eq!(com[1], 0.154851, epsilon = 1e-4);
 }
-// com:1 ends here
+// dbce8505 ends here
 
-// [[file:../trajectory.note::*config][config:1]]
+// [[file:../trajectory.note::fa617f7c][fa617f7c]]
 mod config {
     use gut::config::*;
     use gut::prelude::*;
@@ -116,6 +123,8 @@ mod config {
     pub(crate) struct Settings {
         /// user defined bond valence paramters
         pub atoms: Vec<Atom>,
+        /// selected atoms for analysis
+        pub selections: Option<Vec<usize>>,
     }
 
     impl Default for Settings {
@@ -131,7 +140,7 @@ mod config {
                 },
             ];
 
-            Settings { atoms }
+            Settings { atoms, selections: None }
         }
     }
 
@@ -146,7 +155,7 @@ mod config {
         Settings::default().print_toml();
     }
 }
-// config:1 ends here
+// fa617f7c ends here
 
 // [[file:../trajectory.note::*core][core:1]]
 use indicatif::ProgressBar;
@@ -181,7 +190,7 @@ fn lindemann_process_frames(
         .with_style(indicatif::ProgressStyle::default_bar().progress_chars("#>-"));
     for frame in frames {
         nframes += 1.0;
-        let distances1 = calculate_distance_matrix(&frame);
+        let distances1 = calculate_distance_matrix(&frame, settings);
         let distances2 = calculate_distances_center_of_mass(&frame, settings);
         for i in 0..npairs {
             let xn = distances1[i];
@@ -278,7 +287,7 @@ fn test_quick_check() {
 }
 // quick check:1 ends here
 
-// [[file:../trajectory.note::*cli][cli:1]]
+// [[file:../trajectory.note::07c944a2][07c944a2]]
 pub mod cli {
     use super::*;
 
@@ -300,12 +309,15 @@ pub mod cli {
         #[structopt(parse(from_os_str))]
         trjfile: Option<PathBuf>,
 
+        #[structopt(flatten)]
+        verbose: gut::cli::Verbosity,
+
         /// Prints default configuration for atom type mapping.
         #[structopt(long = "print", short = "p")]
         print: bool,
     }
 
-    pub fn enter_main() -> CliResult {
+    pub fn enter_main() -> Result<()> {
         let args = Cli::from_args();
 
         if args.print {
@@ -318,6 +330,7 @@ pub mod cli {
             let (natoms, nframes) = quick_check_natoms_nframes(&trjfile)?;
             let indices = lindemann_process_frames(&trjfile, natoms, nframes, &settings);
 
+            // FIXME: print with real atom id
             println!("{:^8}\t{:^18}\t{:^18}", "atom index", "distance to com", "lindemann index");
             for (i, (di, qi)) in indices.into_iter().enumerate() {
                 println!("{:^8}\t{:^-18.8}\t{:^-18.8}", i + 1, di, qi);
@@ -329,7 +342,7 @@ pub mod cli {
         Ok(())
     }
 }
-// cli:1 ends here
+// 07c944a2 ends here
 
 // [[file:../trajectory.note::*test][test:1]]
 #[test]
