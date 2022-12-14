@@ -29,6 +29,22 @@ mod common {
 use common::*;
 // 16fef675 ends here
 
+// [[file:../trajectory.note::61448511][61448511]]
+#[cfg(feature = "adhoc")]
+/// Docs for local development
+pub mod docs {
+    macro_rules! export_doc {
+        ($l:ident) => {
+            pub mod $l {
+                pub use crate::$l::*;
+            }
+        };
+    }
+
+    export_doc!(part);
+}
+// 61448511 ends here
+
 // [[file:../trajectory.note::fe8af640][fe8af640]]
 // pub use lammps::{analyze_frames, extract_frame};
 // pub use lindemann::cli::enter_main as lindemann_cli;
