@@ -12,7 +12,7 @@ use gchemol::Molecule;
 use gut::prelude::*;
 // imports:1 ends here
 
-// [[file:../trajectory.note::*base][base:1]]
+// [[file:../trajectory.note::2d0268ed][2d0268ed]]
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -50,7 +50,7 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
         }
 
         // construct molecule from text stream
-        let mut mol = Molecule::from_str(&buf, "text/xyz")?;
+        let mut mol = Molecule::parse_from(&buf, "text/xyz")?;
 
         // build bonding connectivity
         mol.rebond();
@@ -66,7 +66,7 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
         let mut keys: Vec<_> = map.keys().collect();
         keys.sort();
         out.push_str(&format!("frame {}\n", iframe));
-        for k in 3..(max + 1) {
+        for k in 3..(max+1) {
             if let Some(n) = map.get(&k) {
                 out.push_str(&format!("{}, {:}\n", k, n));
             } else {
@@ -84,7 +84,7 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
 
     Ok(out)
 }
-// base:1 ends here
+// 2d0268ed ends here
 
 // [[file:../trajectory.note::*entry/find rings][entry/find rings:1]]
 use std::collections::HashSet;
@@ -132,9 +132,9 @@ pub(crate) fn find_rings(mol: &Molecule, max_ring_size: usize) -> Rings {
 }
 
 fn find_ring(
-    mol: &Molecule,    // parent molecule
+    mol: &Molecule,        // parent molecule
     members: &[usize], // current node list
-    max: usize,        // max ring size?
+    max: usize,            // max ring size?
 ) -> (usize, Rings) {
     let n = members.len();
     if n > max {

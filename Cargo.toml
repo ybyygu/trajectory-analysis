@@ -1,7 +1,7 @@
 # [[file:trajectory.note::fa80d52c][fa80d52c]]
 [package]
 name = "trajectory-analysis"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
@@ -15,13 +15,13 @@ streaming-stats = "0.2"
 text-parser = { version = "0.1.1", package = "gchemol-parser" }
 gut = { version = "0.1", package="gchemol-gut" }
 vecfx = { version = "0.1", features= ["nalgebra"] }
-gchemol = { version = ">=0.0.41", features=["adhoc"]}
+gchemol = { version = "0.1.0", features=["adhoc"]}
 plotly = "0.6"
 
 # TODO: remove below
-petgraph = "0.6"
-structopt = "0.3"
-cgmath = "0.18"                 # TODO: remove
+# petgraph = "0.6"
+# structopt = "0.3"
+# cgmath = "0.18"                 # TODO: remove
 
 [dev-dependencies]
 approx = "0.3"
