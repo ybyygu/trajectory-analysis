@@ -12,7 +12,6 @@ pub mod cli;
 
 mod cp2k;
 mod part;
-mod ring;
 mod xyztraj;
 
 // mod atoms;
