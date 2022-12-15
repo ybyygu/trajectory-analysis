@@ -1,24 +1,24 @@
-// [[file:../trajectory.note::*imports][imports:1]]
-// for linderman
+// [[file:../trajectory.note::d3e7a8f3][d3e7a8f3]]
+// for lindemann file.stream_len API call
 #![feature(seek_convenience)]
 #![feature(seek_stream_len)]
 
 #[cfg(test)]
 #[macro_use] extern crate approx;
-// imports:1 ends here
+// d3e7a8f3 ends here
 
 // [[file:../trajectory.note::16fef675][16fef675]]
+/// Command line tools
 pub mod cli;
 
 mod cp2k;
 mod lammps;
+mod lindemann;
 mod part;
 mod xyztraj;
 
 // mod atoms;
 // mod graph;
-// mod lammps;
-// mod lindemann;
 // mod topo;
 
 // pub mod adhoc;
@@ -48,24 +48,10 @@ pub mod docs {
 
     export_doc!(part);
     export_doc!(xyztraj);
+    export_doc!(lammps);
+    export_doc!(lindemann);
 }
 // 61448511 ends here
-
-// [[file:../trajectory.note::fe8af640][fe8af640]]
-#[cfg(feature = "adhoc")]
-#[inline]
-pub fn fibonacci(n: u64) -> u64 {
-    match n {
-        0 => 1,
-        1 => 1,
-        n => fibonacci(n - 1) + fibonacci(n - 2),
-    }
-}
-
-// pub use lammps::{analyze_frames, extract_frame};
-// pub use lindemann::cli::enter_main as lindemann_cli;
-// pub use topo::topo_cli;
-// fe8af640 ends here
 
 // [[file:../trajectory.note::*frame][frame:1]]
 pub struct Frame {

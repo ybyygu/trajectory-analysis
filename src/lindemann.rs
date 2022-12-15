@@ -1,10 +1,10 @@
-// [[file:../trajectory.note::*imports][imports:1]]
+// [[file:../trajectory.note::9cafa605][9cafa605]]
 use std::path::{Path, PathBuf};
 
-use crate::lammps_::*;
+use crate::lammps::*;
 
 use gut::prelude::*;
-// imports:1 ends here
+// 9cafa605 ends here
 
 // [[file:../trajectory.note::a90d113a][a90d113a]]
 fn calculate_distance_matrix(frame: &LammpsTrajectoryFrame, settings: &config::Settings) -> Vec<f64> {
@@ -144,10 +144,8 @@ mod config {
         }
     }
 
-    impl Configure for Settings {}
-
     pub(crate) fn load_settigns_from_config_file() -> Settings {
-        Settings::load_from_file("lindemann.conf")
+        Settings::from_toml("lindemann.conf").unwrap()
     }
 
     #[test]
@@ -157,7 +155,7 @@ mod config {
 }
 // fa617f7c ends here
 
-// [[file:../trajectory.note::*core][core:1]]
+// [[file:../trajectory.note::7415f651][7415f651]]
 use indicatif::ProgressBar;
 
 fn lindemann_process_frames(
@@ -169,8 +167,7 @@ fn lindemann_process_frames(
     estimated_nframes: usize,
     // user settings for each atom such as element symbol, mass, etc
     settings: &config::Settings,
-) -> Vec<(f64, f64)> {
-    let frames = parse_lammps_dump_file(trjfile);
+) -> Result<Vec<(f64, f64)>> {
     let npairs = {
         let n = natoms as f64;
         let m = n * (n - 1.0) / 2.0;
@@ -186,9 +183,9 @@ fn lindemann_process_frames(
     let mut nframes: f64 = 0.0;
 
     // setup progress bar
-    let bar = ProgressBar::new(estimated_nframes as u64)
-        .with_style(indicatif::ProgressStyle::default_bar().progress_chars("#>-"));
-    for frame in frames {
+    let bar =
+        ProgressBar::new(estimated_nframes as u64).with_style(indicatif::ProgressStyle::default_bar().progress_chars("#>-"));
+    for frame in parse_lammps_dump_file(trjfile)? {
         nframes += 1.0;
         let distances1 = calculate_distance_matrix(&frame, settings);
         let distances2 = calculate_distances_center_of_mass(&frame, settings);
@@ -217,8 +214,6 @@ fn lindemann_process_frames(
     }
     bar.finish();
 
-    // dbg!(array_mean_dist_com);
-
     let cv_rij: Vec<_> = (0..npairs)
         .into_par_iter()
         .map(|i| {
@@ -231,7 +226,8 @@ fn lindemann_process_frames(
 
     // start calculate mean over atom pairs
     let pairs: Vec<_> = (0..natoms).combinations(2).collect();
-    (0..natoms)
+
+    let x = (0..natoms)
         .zip(array_mean_dist_com.into_iter())
         .map(|(i, di)| {
             // find neighbors for atom i in pairs
@@ -242,9 +238,10 @@ fn lindemann_process_frames(
             let qi = stats::mean(it);
             (di, qi)
         })
-        .collect()
+        .collect();
+    Ok(x)
 }
-// core:1 ends here
+// 7415f651 ends here
 
 // [[file:../trajectory.note::*quick check][quick check:1]]
 fn quick_check_natoms_nframes(trjfile: &Path) -> Result<(usize, usize)> {
@@ -287,7 +284,62 @@ fn test_quick_check() {
 }
 // quick check:1 ends here
 
-// [[file:../trajectory.note::*test][test:1]]
+// [[file:../trajectory.note::07c944a2][07c944a2]]
+pub mod cli {
+    use super::*;
+
+    use gut::cli::*;
+    use gut::config::*;
+
+    /// Calculate Lindemann indices for LAMMPS trajectory file (.dump)
+    ///
+    /// * Current limitations:
+    ///
+    /// 1. PBC blind (treat as nano-particles)
+    /// 2. Required dump fields: x, y, z (Cartesian coordinates)
+    #[derive(Debug, Parser)]
+    pub struct LindemannCli {
+        /// The trajectory file in xyz format.
+        trjfile: Option<PathBuf>,
+
+        #[command(flatten)]
+        verbose: Verbosity,
+
+        /// Prints default configuration for atom type mapping.
+        #[arg(long, short)]
+        print: bool,
+    }
+
+    impl LindemannCli {
+        pub fn enter_main() -> Result<()> {
+            let args = Self::parse();
+
+            if args.print {
+                config::Settings::default().print_toml();
+                return Ok(());
+            }
+
+            if let Some(trjfile) = args.trjfile {
+                let settings = config::load_settigns_from_config_file();
+                let (natoms, nframes) = quick_check_natoms_nframes(&trjfile)?;
+                let indices = lindemann_process_frames(&trjfile, natoms, nframes, &settings)?;
+
+                // FIXME: print with real atom id
+                println!("{:^8}\t{:^18}\t{:^18}", "atom index", "distance to com", "lindemann index");
+                for (i, (di, qi)) in indices.into_iter().enumerate() {
+                    println!("{:^8}\t{:^-18.8}\t{:^-18.8}", i + 1, di, qi);
+                }
+            } else {
+                Self::command().print_help();
+            }
+
+            Ok(())
+        }
+    }
+}
+// 07c944a2 ends here
+
+// [[file:../trajectory.note::f32cd037][f32cd037]]
 #[test]
 #[ignore]
 fn test_linermann() {
@@ -296,9 +348,9 @@ fn test_linermann() {
     let fname = "tests/files/lammps-test.dump";
     let natoms = 537;
     let settings = config::Settings::default();
-    let indices = lindemann_process_frames(fname.as_ref(), natoms, 0, &settings);
+    let indices = lindemann_process_frames(fname.as_ref(), natoms, 0, &settings).unwrap();
 
     let (d0, q0) = indices[0];
     assert_relative_eq!(q0, 0.01002696, epsilon = 1e-4);
 }
-// test:1 ends here
+// f32cd037 ends here

@@ -59,3 +59,7 @@ impl PartCli {
     }
 }
 // b5926f52 ends here
+
+// [[file:../trajectory.note::3f98b8f6][3f98b8f6]]
+pub use crate::lindemann::cli::LindemannCli;
+// 3f98b8f6 ends here
