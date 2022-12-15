@@ -287,63 +287,6 @@ fn test_quick_check() {
 }
 // quick check:1 ends here
 
-// [[file:../trajectory.note::07c944a2][07c944a2]]
-pub mod cli {
-    use super::*;
-
-    use structopt::StructOpt;
-
-    use gut::cli::*;
-    use gut::config::*;
-
-    /// Calculate Lindemann indices for LAMMPS trajectory file (.dump)
-    ///
-    /// * Current limitations:
-    ///
-    /// 1. PBC blind (treat as nano-particles)
-    /// 2. Required dump fields: x, y, z (Cartesian coordinates)
-    ///
-    #[derive(Debug, StructOpt)]
-    struct Cli {
-        /// The trajectory file in xyz format.
-        #[structopt(parse(from_os_str))]
-        trjfile: Option<PathBuf>,
-
-        #[structopt(flatten)]
-        verbose: gut::cli::Verbosity,
-
-        /// Prints default configuration for atom type mapping.
-        #[structopt(long = "print", short = "p")]
-        print: bool,
-    }
-
-    pub fn enter_main() -> Result<()> {
-        let args = Cli::from_args();
-
-        if args.print {
-            config::Settings::default().print_toml();
-            return Ok(());
-        }
-
-        if let Some(trjfile) = args.trjfile {
-            let settings = config::load_settigns_from_config_file();
-            let (natoms, nframes) = quick_check_natoms_nframes(&trjfile)?;
-            let indices = lindemann_process_frames(&trjfile, natoms, nframes, &settings);
-
-            // FIXME: print with real atom id
-            println!("{:^8}\t{:^18}\t{:^18}", "atom index", "distance to com", "lindemann index");
-            for (i, (di, qi)) in indices.into_iter().enumerate() {
-                println!("{:^8}\t{:^-18.8}\t{:^-18.8}", i + 1, di, qi);
-            }
-        } else {
-            Cli::clap().print_help();
-        }
-
-        Ok(())
-    }
-}
-// 07c944a2 ends here
-
 // [[file:../trajectory.note::*test][test:1]]
 #[test]
 #[ignore]

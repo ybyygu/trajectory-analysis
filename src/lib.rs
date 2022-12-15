@@ -11,6 +11,7 @@
 pub mod cli;
 
 mod cp2k;
+mod lammps;
 mod part;
 mod xyztraj;
 
@@ -21,7 +22,6 @@ mod xyztraj;
 // mod topo;
 
 // pub mod adhoc;
-// pub mod lammps_;
 // pub mod xyz;
 
 mod common {
