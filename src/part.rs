@@ -47,9 +47,14 @@ fn create_neighborhood_probe(mol: &Molecule) -> Neighborhood {
     nh
 }
 
+/// Update coordinates from `mol` using existing neighborhood probe.
+fn nh_update_particles(nh: &mut Neighborhood, mol: &Molecule) {
+    let particles: Vec<_> = mol.atoms().map(|(i, a)| (i, a.position())).collect();
+    nh.update(particles);
+}
+
 /// 从一帧结构数据中提取需要输出为 Parquet 格式的 row 数据
-fn get_neighbor_data(mol: &Molecule, image_id: usize, r_cutoff: f64) -> Vec<RowData> {
-    let nh = create_neighborhood_probe(mol);
+fn get_neighbor_data(nh: &Neighborhood, mol: &Molecule, image_id: usize, r_cutoff: f64) -> Vec<RowData> {
     let n = mol.natoms();
     (1..=n)
         .flat_map(|i| {
@@ -59,6 +64,7 @@ fn get_neighbor_data(mol: &Molecule, image_id: usize, r_cutoff: f64) -> Vec<RowD
                 atom2: n.node,
                 distance: n.distance,
                 bond_valence: eval_bond_valence(mol.get_atom_unchecked(i), mol.get_atom_unchecked(n.node), n.distance).into(),
+                // bond_valence: None,
             })
         })
         .collect()
@@ -69,8 +75,11 @@ pub fn write_connection_dataframe_parquet(mols: impl Iterator<Item = Molecule>, 
     use parquet_tools::SimpleParquetFileWriter;
 
     let mut writer = SimpleParquetFileWriter::new(path);
+    let mut nh = None;
     for (i, mol) in mols.enumerate() {
-        let row_group = get_neighbor_data(&mol, i, r_cutoff);
+        let nh_ = nh.get_or_insert_with(|| create_neighborhood_probe(&mol));
+        nh_update_particles(nh_, &mol);
+        let row_group = get_neighbor_data(nh_, &mol, i, r_cutoff);
         writer.write_row_group(row_group.as_slice())?;
     }
     writer.close()?;
