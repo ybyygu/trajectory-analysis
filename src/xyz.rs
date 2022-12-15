@@ -50,7 +50,7 @@ pub fn count_rings_in_trajectory<P: AsRef<Path>>(path: P, max: usize) -> Result<
         }
 
         // construct molecule from text stream
-        let mut mol = Molecule::parse_from(&buf, "text/xyz")?;
+        let mut mol = Molecule::from_str(&buf, "text/xyz")?;
 
         // build bonding connectivity
         mol.rebond();

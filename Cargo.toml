@@ -1,22 +1,29 @@
 # [[file:trajectory.note::fa80d52c][fa80d52c]]
 [package]
 name = "trajectory-analysis"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
 [dependencies]
 serde = {version="1", features = ["derive"]}
 serde_json = "1"
-clap = "2.33"
+clap = { version = "4", features = ["derive", "env"] }
 indexmap = "1.7"
 indicatif = "0.16"
 streaming-stats = "0.2"
-text-parser = { version = "0.1.1", package = "gchemol-parser" }
-gut = { version = "0.1", package="gchemol-gut" }
+text-parser = { version = "0.3.2", package = "gchemol-parser" }
+gut = { version = "0.4", package="gchemol-gut" }
 vecfx = { version = "0.1", features= ["nalgebra"] }
-gchemol = { version = "0.1.0", features=["adhoc"]}
+gchemol = { version = "0.1.2", features=["adhoc"]}
 plotly = "0.6"
+parquet-tools = { version = "0.0.2", path = "../parquet-tools"}
+parquet = "28.0.0"
+parquet_derive = "28.0.0"
+
+[features]
+# for easy development
+adhoc = []
 
 # TODO: remove below
 # petgraph = "0.6"
@@ -25,4 +32,9 @@ plotly = "0.6"
 
 [dev-dependencies]
 approx = "0.3"
+criterion = "0.4"
+
+[[bench]]
+name = "my_benchmark"
+harness = false
 # fa80d52c ends here

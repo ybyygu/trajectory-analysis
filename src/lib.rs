@@ -1,38 +1,58 @@
-// [[file:../trajectory.note::*imports][imports:1]]
-// for linderman
+// [[file:../trajectory.note::d3e7a8f3][d3e7a8f3]]
+// for lindemann file.stream_len API call
 #![feature(seek_convenience)]
 #![feature(seek_stream_len)]
 
 #[cfg(test)]
 #[macro_use] extern crate approx;
-
-use std::collections::HashMap;
-// imports:1 ends here
+// d3e7a8f3 ends here
 
 // [[file:../trajectory.note::16fef675][16fef675]]
+/// Command line tools
+pub mod cli;
+
+mod cp2k;
+mod lammps;
+mod lindemann;
+mod part;
+mod rings;
+mod xyztraj;
+
 // mod atoms;
 // mod graph;
-// mod lammps;
-// mod lindemann;
-mod part;
 // mod topo;
 
 // pub mod adhoc;
-// pub mod lammps_;
 // pub mod xyz;
 
-pub mod common {
+mod common {
+    pub use std::collections::HashMap;
+    pub use std::path::{Path, PathBuf};
+
     pub use gut::cli::*;
     pub use gut::prelude::*;
 }
 use common::*;
 // 16fef675 ends here
 
-// [[file:../trajectory.note::fe8af640][fe8af640]]
-// pub use lammps::{analyze_frames, extract_frame};
-// pub use lindemann::cli::enter_main as lindemann_cli;
-// pub use topo::topo_cli;
-// fe8af640 ends here
+// [[file:../trajectory.note::61448511][61448511]]
+#[cfg(feature = "adhoc")]
+/// Docs for local development
+pub mod docs {
+    macro_rules! export_doc {
+        ($l:ident) => {
+            pub mod $l {
+                pub use crate::$l::*;
+            }
+        };
+    }
+
+    export_doc!(part);
+    export_doc!(xyztraj);
+    export_doc!(lammps);
+    export_doc!(lindemann);
+}
+// 61448511 ends here
 
 // [[file:../trajectory.note::*frame][frame:1]]
 pub struct Frame {

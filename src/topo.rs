@@ -5,12 +5,12 @@ use gchemol::Molecule;
 use gut::fs::*;
 // imports:1 ends here
 
-// [[file:../trajectory.note::*cp2k][cp2k:1]]
+// [[file:../trajectory.note::2698f88c][2698f88c]]
 use gchemol::Lattice;
 
 fn get_lattice_from_cp2k_input(file: &Path) -> Result<Lattice> {
     // quick and dirty
-    let s = read_file(file)?;
+    let s = gut::fs::read_file(file)?;
 
     let mut abc = None;
     let mut alpha_beta_gamma = None;
@@ -42,7 +42,7 @@ fn get_lattice_from_cp2k_input(file: &Path) -> Result<Lattice> {
     }
     bail!("parse cell from cp2k input failure!")
 }
-// cp2k:1 ends here
+// 2698f88c ends here
 
 // [[file:../trajectory.note::*bond][bond:1]]
 use gchemol::Atom;
