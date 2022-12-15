@@ -8,12 +8,16 @@
 // imports:1 ends here
 
 // [[file:../trajectory.note::16fef675][16fef675]]
+pub mod cli;
+
+mod cp2k;
+mod part;
+mod xyztraj;
+
 // mod atoms;
 // mod graph;
 // mod lammps;
 // mod lindemann;
-mod part;
-mod xyztraj;
 // mod topo;
 
 // pub mod adhoc;

@@ -8,12 +8,12 @@ authors = ["Wenping Guo <ybyygu@gmail.com>"]
 [dependencies]
 serde = {version="1", features = ["derive"]}
 serde_json = "1"
-clap = "2.33"
+clap = { version = "4", features = ["derive", "env"] }
 indexmap = "1.7"
 indicatif = "0.16"
 streaming-stats = "0.2"
 text-parser = { version = "0.1.1", package = "gchemol-parser" }
-gut = { version = "0.1", package="gchemol-gut" }
+gut = { version = "0.4", package="gchemol-gut" }
 vecfx = { version = "0.1", features= ["nalgebra"] }
 gchemol = { version = "0.1.0", features=["adhoc"]}
 plotly = "0.6"
