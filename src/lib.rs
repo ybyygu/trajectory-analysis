@@ -15,6 +15,7 @@ mod cp2k;
 mod lammps;
 mod lindemann;
 mod part;
+mod rings;
 mod xyztraj;
 
 // mod atoms;
