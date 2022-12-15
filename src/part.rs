@@ -77,6 +77,8 @@ pub fn write_connection_dataframe_parquet(mols: impl Iterator<Item = Molecule>, 
     let mut writer = SimpleParquetFileWriter::new(path);
     let mut nh = None;
     for (i, mol) in mols.enumerate() {
+        let i = i + 1;
+        println!("processing frame {}", i);
         let nh_ = nh.get_or_insert_with(|| create_neighborhood_probe(&mol));
         nh_update_particles(nh_, &mol);
         let row_group = get_neighbor_data(nh_, &mol, i, r_cutoff);
