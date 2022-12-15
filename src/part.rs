@@ -16,12 +16,22 @@ pub struct RowData {
     atom2: usize,
     /// The distance between `atom1` and `atom2`
     distance: f64,
+    /// The bond valence between `atom1` and `atom2`
+    bond_valence: Option<f64>,
 }
 // 61ace94b ends here
 
 // [[file:../trajectory.note::c35cdbe7][c35cdbe7]]
 use gchemol::neighbors::{Neighbor, Neighborhood};
-use gchemol::Molecule;
+use gchemol::{Atom, Molecule};
+
+fn eval_bond_valence(atom1: &Atom, atom2: &Atom, distance: f64) -> f64 {
+    let r1 = atom1.get_cov_radius().expect("no cov radius");
+    let r2 = atom2.get_cov_radius().expect("no cov radius");
+    let r0 = r1 + r2;
+    let b = 0.37;
+    ((r0 - distance) / b).exp()
+}
 
 /// Return a `Neighborhood` struct for probing nearest neighbors in `mol`
 ///
@@ -38,10 +48,9 @@ fn create_neighborhood_probe(mol: &Molecule) -> Neighborhood {
 }
 
 /// 从一帧结构数据中提取需要输出为 Parquet 格式的 row 数据
-fn get_neighbor_data(mol: &Molecule, image_id: usize) -> Vec<RowData> {
+fn get_neighbor_data(mol: &Molecule, image_id: usize, r_cutoff: f64) -> Vec<RowData> {
     let nh = create_neighborhood_probe(mol);
     let n = mol.natoms();
-    let r_cutoff = 3.0;
     (1..=n)
         .flat_map(|i| {
             nh.neighbors(i, r_cutoff).map(move |n| RowData {
@@ -49,18 +58,19 @@ fn get_neighbor_data(mol: &Molecule, image_id: usize) -> Vec<RowData> {
                 atom1: i,
                 atom2: n.node,
                 distance: n.distance,
+                bond_valence: eval_bond_valence(mol.get_atom_unchecked(i), mol.get_atom_unchecked(n.node), n.distance).into(),
             })
         })
         .collect()
 }
 
 /// 将轨迹`mols` 中的键连信息写入 parquet 文件 `path` 中.
-pub fn write_connection_dataframe_parquet(mols: impl Iterator<Item = Molecule>, path: &Path) -> Result<()> {
+pub fn write_connection_dataframe_parquet(mols: impl Iterator<Item = Molecule>, path: &Path, r_cutoff: f64) -> Result<()> {
     use parquet_tools::SimpleParquetFileWriter;
 
     let mut writer = SimpleParquetFileWriter::new(path);
     for (i, mol) in mols.enumerate() {
-        let row_group = get_neighbor_data(&mol, i);
+        let row_group = get_neighbor_data(&mol, i, r_cutoff);
         writer.write_row_group(row_group.as_slice())?;
     }
     writer.close()?;
@@ -68,14 +78,3 @@ pub fn write_connection_dataframe_parquet(mols: impl Iterator<Item = Molecule>, 
     Ok(())
 }
 // c35cdbe7 ends here
-
-// [[file:../trajectory.note::769874b9][769874b9]]
-#[test]
-fn test_write_connect() -> Result<()> {
-    let molfile = "data/55/798fcc-6c7a-424f-8c87-7e8b11300345/SiAlCaO1800k.xyz";
-    let mols = gchemol::io::read(molfile)?;
-    write_connection_dataframe_parquet(mols, "/tmp/a.parquet".as_ref())?;
-
-    Ok(())
-}
-// 769874b9 ends here

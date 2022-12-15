@@ -10,15 +10,11 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
-fn read_line(file: &mut BufReader<File>, buf: &mut String) -> Result<()> {
+fn read_line(file: &mut BufReader<File>, buf: &mut String) -> Option<()> {
     match file.read_line(buf) {
-        Ok(0) => {
-            bail!("Reached EOF")
-        }
-        Ok(_) => Ok(()),
-        Err(e) => {
-            bail!("Read file error: {e}")
-        }
+        Ok(0) => None,
+        Ok(_) => Some(()),
+        Err(_) => None,
     }
 }
 
@@ -32,23 +28,23 @@ pub fn read_xyz_trajectory(path: &Path) -> Result<impl Iterator<Item = Molecule>
 
     // read the number of atoms from the frist line
     let mut buf = String::new();
-    read_line(&mut file, &mut buf)?;
+    let _ = file.read_line(&mut buf)?;
     let natoms: usize = buf
         .trim()
         .parse()
-        .map_err(|e| format_err!("The first line should be an integer: {:?}!", buf))?;
+        .map_err(|_| format_err!("The first line should be an integer: {:?}!", buf))?;
 
     let mols = (0..).map_while(move |i| {
         // skip natom line
         if i > 0 {
-            read_line(&mut file, &mut buf).ok()?;
+            read_line(&mut file, &mut buf)?;
         }
         // skip title line
-        read_line(&mut file, &mut buf).ok()?;
+        read_line(&mut file, &mut buf)?;
         buf.clear();
         // read the remaining natoms lines
         for _ in 0..natoms {
-            read_line(&mut file, &mut buf).ok()?;
+            read_line(&mut file, &mut buf)?;
         }
 
         // construct molecule from text stream
@@ -59,7 +55,7 @@ pub fn read_xyz_trajectory(path: &Path) -> Result<impl Iterator<Item = Molecule>
         Some(mol)
     });
 
-    Ok(mols.fuse())
+    Ok(mols)
 }
 // 2155de6b ends here
 
