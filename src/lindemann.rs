@@ -339,6 +339,56 @@ pub mod cli {
 }
 // 07c944a2 ends here
 
+// [[file:../trajectory.note::7415f651][7415f651]]
+use stats::OnlineStats;
+
+fn lindemann_process_frames_(
+    // path to a LAMMPS trajectory file
+    trjfile: &Path,
+    // number of atoms per frame
+    natoms: usize,
+    // estimated number of frames in trajectory file
+    estimated_nframes: usize,
+    // user settings for each atom such as element symbol, mass, etc
+    settings: &config::Settings,
+) -> Result<Vec<f64>> {
+    let npairs = {
+        let n = natoms as f64;
+        let m = n * (n - 1.0) / 2.0;
+        m as usize
+    };
+
+    let mut stats_array = vec![OnlineStats::new(); npairs];
+    for frame in parse_lammps_dump_file(trjfile)? {
+        let distances1 = calculate_distance_matrix(&frame, settings);
+        for i in 0..npairs {
+            let xn = distances1[i];
+            stats_array[i].add(xn);
+        }
+    }
+
+    let cv_rij: Vec<_> = (0..npairs)
+        .into_par_iter()
+        .map(|i| stats_array[i].stddev() / stats_array[i].mean())
+        .collect();
+
+    // start calculate mean over atom pairs
+    let pairs: Vec<_> = (0..natoms).combinations(2).collect();
+
+    let x = (0..natoms)
+        .map(|i| {
+            // find neighbors for atom i in pairs
+            let it = pairs
+                .iter()
+                .enumerate()
+                .filter_map(|(k, p)| if p[0] == i || p[1] == i { Some(cv_rij[k]) } else { None });
+            stats::mean(it)
+        })
+        .collect();
+    Ok(x)
+}
+// 7415f651 ends here
+
 // [[file:../trajectory.note::f32cd037][f32cd037]]
 #[test]
 #[ignore]
@@ -348,9 +398,15 @@ fn test_linermann() {
     let fname = "tests/files/lammps-test.dump";
     let natoms = 537;
     let settings = config::Settings::default();
+    let indices_ = lindemann_process_frames_(fname.as_ref(), natoms, 0, &settings).unwrap();
     let indices = lindemann_process_frames(fname.as_ref(), natoms, 0, &settings).unwrap();
 
-    let (d0, q0) = indices[0];
-    assert_relative_eq!(q0, 0.01002696, epsilon = 1e-4);
+    for i in 0..indices.len() {
+        assert_relative_eq!(indices[i].1, indices_[i], epsilon = 1e-4);
+    }
+
+    // let q0 = indices_[0];
+    // let q0 = indices[0].1;
+    // assert_relative_eq!(q0, 0.01002696, epsilon = 1e-4);
 }
 // f32cd037 ends here
