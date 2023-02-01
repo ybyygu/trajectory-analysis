@@ -1,4 +1,6 @@
 // [[file:../trajectory.note::d3e7a8f3][d3e7a8f3]]
+#![feature(test)]
+
 // for lindemann file.stream_len API call
 #![feature(seek_convenience)]
 #![feature(seek_stream_len)]

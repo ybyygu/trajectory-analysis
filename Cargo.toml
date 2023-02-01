@@ -12,7 +12,7 @@ clap = { version = "4", features = ["derive", "env"] }
 indexmap = "1.7"
 indicatif = "0.16"
 streaming-stats = "0.2"
-text-parser = { version = "0.3.2", package = "gchemol-parser" }
+text-parser = { version = "0.4.0", package = "gchemol-parser" }
 gut = { version = "0.4", package="gchemol-gut" }
 vecfx = { version = "0.1", features= ["nalgebra"] }
 gchemol = { version = "0.1.2", features=["adhoc"]}
@@ -34,7 +34,7 @@ adhoc = []
 approx = "0.3"
 criterion = "0.4"
 
-[[bench]]
-name = "my_benchmark"
-harness = false
+# [[bench]]
+# name = "my_benchmark"
+# harness = false
 # fa80d52c ends here
