@@ -19,7 +19,6 @@ mod lammps;
 mod lindemann;
 // mod part;
 mod rings;
-mod xyztraj;
 
 // mod atoms;
 // mod graph;
