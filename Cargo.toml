@@ -1,7 +1,7 @@
 # [[file:trajectory.note::fa80d52c][fa80d52c]]
 [package]
 name = "trajectory-analysis"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
@@ -17,9 +17,9 @@ gut = { version = "0.4", package="gchemol-gut" }
 vecfx = { version = "0.1", features= ["nalgebra"] }
 gchemol = { version = "0.1.2", features=["adhoc"]}
 # plotly = "0.6"
-# parquet-tools = { version = "0.0.2", package = "gosh-dataset"}
-# parquet = "28.0.0"
-# parquet_derive = "28.0.0"
+parquet-tools = { version = "0.1", package = "gosh-dataset"}
+parquet = "28.0.0"
+parquet_derive = "28.0.0"
 
 [features]
 # for easy development
