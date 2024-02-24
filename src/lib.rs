@@ -1,5 +1,6 @@
 // [[file:../trajectory.note::d3e7a8f3][d3e7a8f3]]
 #![feature(test)]
+#![feature(result_option_inspect)]
 
 // for lindemann file.stream_len API call
 #![feature(seek_convenience)]
@@ -16,9 +17,9 @@ pub mod cli;
 mod cp2k;
 mod lammps;
 mod lindemann;
-mod part;
+// mod part;
+mod reaction;
 mod rings;
-mod xyztraj;
 
 // mod atoms;
 // mod graph;
@@ -49,8 +50,8 @@ pub mod docs {
         };
     }
 
-    export_doc!(part);
-    export_doc!(xyztraj);
+    // export_doc!(part);
+    // export_doc!(xyztraj);
     export_doc!(lammps);
     export_doc!(lindemann);
 }
