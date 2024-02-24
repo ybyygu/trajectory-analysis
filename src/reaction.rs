@@ -17,8 +17,8 @@ use std::collections::BTreeSet as HashSet;
 
 fn get_bonding_changes(mol1: &Molecule, mol2: &Molecule) -> [HashSet<[usize; 2]>; 2] {
     // NOTE: we ignore bond type difference
-    let bonds1: HashSet<[usize; 2]> = mol1.bonds().map(|(u, v, bond)| [u, v]).collect();
-    let bonds2: HashSet<[usize; 2]> = mol1.bonds().map(|(u, v, bond)| [u, v]).collect();
+    let bonds1: HashSet<[usize; 2]> = mol1.bonds().map(|(u, v, _)| [u, v]).collect();
+    let bonds2: HashSet<[usize; 2]> = mol2.bonds().map(|(u, v, _)| [u, v]).collect();
     let forming = bonds2.difference(&bonds1).copied().collect();
     let breaking = bonds1.difference(&bonds2).copied().collect();
     [forming, breaking]
@@ -27,7 +27,7 @@ fn get_bonding_changes(mol1: &Molecule, mol2: &Molecule) -> [HashSet<[usize; 2]>
 /// Detects reaction between `mol1` and `mol2` from bond connectivity
 /// changes. Returns reactants and products in list of `Molecule`
 /// objects
-pub(crate) fn get_reaction(mol1: &Molecule, mol2: &Molecule) -> Result<([Vec<Molecule>; 2], [HashSet<[usize; 2]>; 2])> {
+pub fn get_reaction(mol1: &Molecule, mol2: &Molecule) -> Result<([Vec<Molecule>; 2], [HashSet<[usize; 2]>; 2])> {
     ensure!(mol1.matching_configuration(mol2), "invalid molecule pair for reaction!");
 
     let [forming, breaking] = get_bonding_changes(mol1, mol2);
@@ -67,6 +67,19 @@ pub(crate) fn get_reaction(mol1: &Molecule, mol2: &Molecule) -> Result<([Vec<Mol
 
     Ok(([reactants, products], [forming, breaking]))
 }
+
+/// Return chemical reaction composition bewteen `mol1` and `mol2` by
+/// analysis of bond changes between `mol1` and `mol2`.
+pub fn get_reaction_composition(mol1: &Molecule, mol2: &Molecule) -> Result<String> {
+    let ([reactants, products], _) = get_reaction(mol1, mol2)?;
+    let mut reaction_composition = String::new();
+    if !reactants.is_empty() && !products.is_empty() {
+        let reactants_composition = get_composition(&reactants);
+        let products_composition = get_composition(&products);
+        reaction_composition = format!("{} => {}", reactants_composition, products_composition);
+    }
+    Ok(reaction_composition)
+}
 // 38d6eaa6 ends here
 
 // [[file:../trajectory.note::2972f0e5][2972f0e5]]
@@ -88,10 +101,11 @@ mod noise {
         positions
     }
 
+
     /// Find and remove matched noise event pattern
-    fn remove_noise_bonding_events(bonding_events: &mut Vec<i32>, n_space: usize) -> (bool, Vec<(usize, i32)>) {
+    pub fn remove_noise_bonding_events(bonding_events: &mut Vec<i32>, n_space: usize) -> (bool, Vec<(usize, i32)>) {
         // Mapping rules as a dictionary
-        let event_to_code: HashMap<i32, &str> = [(0, "N"), (1, "F"), (-1, "B")].iter().cloned().collect();
+        let event_to_code: HashMap<i32, &str> = [(0, "N"), (1, "F"), (-1, "B")].into_iter().collect();
 
         // Convert events to string based on mapping rules
         let event_codes: String = bonding_events.iter().map(|&event| event_to_code[&event]).collect();
@@ -145,17 +159,168 @@ mod noise {
 }
 // 2972f0e5 ends here
 
-// [[file:../trajectory.note::85db89af][85db89af]]
-/// Return chemical reaction composition bewteen `mol1` and `mol2` by
-/// analysis of bond changes between `mol1` and `mol2`.
-pub fn get_reaction_composition(mol1: &Molecule, mol2: &Molecule) -> Result<String> {
-    let ([reactants, products], _) = get_reaction(mol1, mol2)?;
-    let mut reaction_composition = String::new();
-    if !reactants.is_empty() && !products.is_empty() {
-        let reactants_composition = get_composition(&reactants);
-        let products_composition = get_composition(&products);
-        reaction_composition = format!("{} => {}", reactants_composition, products_composition);
+// [[file:../trajectory.note::6f57ef8b][6f57ef8b]]
+use gchemol::trajectory::Trajectory;
+
+/// Bonding events for each pair of atoms
+#[derive(Debug, Default, Clone)]
+pub struct BondingEvents {
+    inner: HashMap<[usize; 2], Vec<i32>>,
+}
+
+impl BondingEvents {
+    /// Print chemical events for manual inspection
+    pub fn print(&self) {
+        print_bonding_events(&self.inner);
     }
-    Ok(reaction_composition)
+
+    /// Insert bonding event value of atom pair `u` and `v`
+    pub fn insert(&mut self, u: usize, v: usize, value: Vec<i32>) {
+        if u < v {
+            self.inner.insert([u, v], value);
+        } else {
+            self.inner.insert([v, u], value);
+        }
+    }
+
+    /// Return the bonding event value for atom pair `u` and `v`
+    pub fn get(&self, u: usize, v: usize) -> Option<&Vec<i32>> {
+        if u < v {
+            self.inner.get(&[u, v])
+        } else {
+            self.inner.get(&[v, u])
+        }
+    }
+
+    /// The bonding events size
+    pub fn len(&self) -> usize {
+        self.inner.len()
+    }
+}
+
+/// Print chemical events for manual inspection
+///
+/// # Parameters
+/// * events: hash map with a pair of atom nodes as the key, and the
+///   bonding event codes along time axis.
+fn print_bonding_events(events: &HashMap<[usize; 2], Vec<i32>>) {
+    if events.is_empty() {
+        println!("No chemical events");
+        return;
+    }
+
+    let map: HashMap<_, _> = [(0, "-"), (1, "↑"), (-1, "↓")].into_iter().collect();
+    let mut keys: Vec<_> = events.keys().copied().collect();
+    keys.sort();
+
+    println!("bond pair: reaction codes");
+    for [u, v] in keys {
+        let signals = &events[&[u, v]];
+        let codes: String = signals.iter().map(|&s| map[&s]).collect();
+        println!("{:03}-{:03}: {}", u, v, codes);
+    }
+
+    let jmol_selection: Vec<_> = events.keys().flatten().map(|x| x.to_string()).collect();
+    let jmol_console_command = format!("select atomno=[{}]\nselectionhalo\nlabel %i", jmol_selection.join(","));
+    println!("If view reaction atoms in jmol, you can use below commands:");
+    println!("{}", jmol_console_command);
+}
+// 6f57ef8b ends here
+
+// [[file:../trajectory.note::*remove noises][remove noises:1]]
+
+// remove noises:1 ends here
+
+// [[file:../trajectory.note::85db89af][85db89af]]
+pub fn get_bonding_events_trajectory(mols: &[Molecule]) -> Result<Trajectory> {
+    assert!(!mols.is_empty());
+
+    let mut m = 0;
+    let mut frames = vec![];
+    for (i, pair) in mols.windows(2).enumerate() {
+        let mol1 = &pair[0];
+        let mol2 = &pair[1];
+        // calculate bonding changes and record them
+        let [forming, breaking] = get_bonding_changes(mol1, mol2);
+        if !forming.is_empty() || !breaking.is_empty() {
+            let mut mol2 = mol2.to_owned();
+            mol2.properties.store("Bonds forming", forming);
+            mol2.properties.store("Bonds breaking", breaking);
+            frames.push(mol2);
+        }
+        m = i + 1;
+    }
+    let n = frames.len();
+    println!("processed {m} frames, found {n} bonding events");
+    let traj = Trajectory::try_from(frames)?;
+
+    Ok(traj)
 }
 // 85db89af ends here
+
+// [[file:../trajectory.note::b91fb579][b91fb579]]
+// use polars::prelude::*;
+pub fn get_bonding_events(traj: &Trajectory, noise_event_life: impl Into<Option<usize>>) -> Result<BondingEvents> {
+    let mut bonding_event_codes = HashMap::new();
+    let mut bonding_event_rows = Vec::new();
+    let mut bonding_event_columns = HashSet::new();
+
+    let nrows = traj.nframes();
+    for i in 0..nrows {
+        bonding_event_rows.push(i);
+        let forming: HashSet<[usize; 2]> = traj.frames[i].properties.load("Bonds forming")?;
+        let breaking: HashSet<[usize; 2]> = traj.frames[i].properties.load("Bonds breaking")?;
+        let entry = bonding_event_codes.entry(i).or_insert(HashMap::new());
+        for pair in forming {
+            bonding_event_columns.insert(pair);
+            entry.insert(pair, 1);
+        }
+        for pair in breaking {
+            bonding_event_columns.insert(pair);
+            entry.insert(pair, -1);
+        }
+    }
+
+    let mut d = BondingEvents::default();
+    let noise_event_life = noise_event_life.into();
+    for col in bonding_event_columns {
+        let mut values: Vec<_> = bonding_event_rows
+            .iter()
+            .map(|row| bonding_event_codes[row].get(&col).unwrap_or(&0))
+            .copied()
+            .collect();
+        if let Some(noise_event_life) = noise_event_life {
+            let (has_reaction, affected_frames) = noise::remove_noise_bonding_events(&mut values, noise_event_life);
+            if has_reaction {
+                d.insert(col[0], col[1], values);
+            }
+        } else {
+            d.insert(col[0], col[1], values);
+        }
+    }
+    Ok(d)
+}
+// b91fb579 ends here
+
+// [[file:../trajectory.note::ec1621a3][ec1621a3]]
+#[test]
+fn test_reaction_xyz() -> Result<()> {
+    let f = "tests/files/lty.xyz";
+
+    let mut mols: Vec<_> = gchemol::io::read(f)?.collect();
+    // create bonds before create trajectory
+    for (i, mol) in mols.iter_mut().enumerate() {
+        mol.rebond();
+        mol.set_title(format!("frame {i}"));
+    }
+
+    let traj = get_bonding_events_trajectory(&mols)?;
+    let events = get_bonding_events(&traj, None)?;
+    assert_eq!(events.len(), 76);
+    let events = get_bonding_events(&traj, 5)?;
+    assert_eq!(events.len(), 3);
+    // events.print();
+
+    Ok(())
+}
+// ec1621a3 ends here

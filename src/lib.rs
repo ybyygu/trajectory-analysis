@@ -51,7 +51,7 @@ pub mod docs {
     }
 
     // export_doc!(part);
-    // export_doc!(xyztraj);
+    export_doc!(reaction);
     export_doc!(lammps);
     export_doc!(lindemann);
 }
