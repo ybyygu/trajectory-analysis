@@ -29,7 +29,7 @@ mod rings;
 // pub mod xyz;
 
 mod common {
-    pub use std::collections::{HashMap, HashSet};
+    pub use std::collections::HashMap;
     pub use std::path::{Path, PathBuf};
 
     pub use gut::cli::*;
