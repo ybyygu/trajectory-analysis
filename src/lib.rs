@@ -18,6 +18,7 @@ mod cp2k;
 mod lammps;
 mod lindemann;
 // mod part;
+mod reaction;
 mod rings;
 
 // mod atoms;
@@ -28,7 +29,7 @@ mod rings;
 // pub mod xyz;
 
 mod common {
-    pub use std::collections::HashMap;
+    pub use std::collections::{HashMap, HashSet};
     pub use std::path::{Path, PathBuf};
 
     pub use gut::cli::*;
@@ -50,7 +51,7 @@ pub mod docs {
     }
 
     // export_doc!(part);
-    export_doc!(xyztraj);
+    // export_doc!(xyztraj);
     export_doc!(lammps);
     export_doc!(lindemann);
 }
