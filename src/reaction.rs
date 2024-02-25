@@ -3,6 +3,10 @@ use crate::common::*;
 use gchemol::Molecule;
 // c0770bc4 ends here
 
+// [[file:../trajectory.note::29d234b7][29d234b7]]
+mod base;
+// 29d234b7 ends here
+
 // [[file:../trajectory.note::707e344d][707e344d]]
 /// Return reactants or products composition in string formulation. For
 /// example, for two molecules in `mols`, returns "H2 + CH4"
@@ -227,9 +231,9 @@ fn print_bonding_events(events: &HashMap<[usize; 2], Vec<i32>>) {
 }
 // 6f57ef8b ends here
 
-// [[file:../trajectory.note::*remove noises][remove noises:1]]
+// [[file:../trajectory.note::*repair noising bonds][repair noising bonds:1]]
 
-// remove noises:1 ends here
+// repair noising bonds:1 ends here
 
 // [[file:../trajectory.note::85db89af][85db89af]]
 pub fn get_bonding_events_trajectory(mols: &[Molecule]) -> Result<Trajectory> {
@@ -301,6 +305,10 @@ pub fn get_bonding_events(traj: &Trajectory, noise_event_life: impl Into<Option<
     Ok(d)
 }
 // b91fb579 ends here
+
+// [[file:../trajectory.note::1276c516][1276c516]]
+pub use base::BondingStates;
+// 1276c516 ends here
 
 // [[file:../trajectory.note::ec1621a3][ec1621a3]]
 #[test]
