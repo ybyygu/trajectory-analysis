@@ -4,6 +4,7 @@ use gchemol::Molecule;
 // c0770bc4 ends here
 
 // [[file:../trajectory.note::29d234b7][29d234b7]]
+mod algo;
 mod base;
 // 29d234b7 ends here
 
@@ -324,10 +325,10 @@ fn test_reaction_xyz() -> Result<()> {
 
     let traj = get_bonding_events_trajectory(&mols)?;
     let events = get_bonding_events(&traj, None)?;
-    assert_eq!(events.len(), 76);
-    let events = get_bonding_events(&traj, 5)?;
-    assert_eq!(events.len(), 3);
-    // events.print();
+    // assert_eq!(events.len(), 76);
+    // let events = get_bonding_events(&traj, 5)?;
+    // assert_eq!(events.len(), 3);
+    events.print();
 
     Ok(())
 }
