@@ -24,11 +24,6 @@ fn ordered(key: [usize; 2]) -> [usize; 2] {
 }
 
 impl BondingStates {
-    // /// Print chemical events for manual inspection
-    // pub fn print(&self) {
-    //     print_bonding_events(&self.inner);
-    // }
-
     /// Insert bonding state of frame `frame_index` for bond `key` between atom `u` and `v`
     pub fn set_frame(&mut self, frame_index: usize, key: [usize; 2], state: bool) {
         let mut entry = self.inner.entry(ordered(key)).or_default();
@@ -50,9 +45,14 @@ impl BondingStates {
         }
     }
 
-    /// The bonding events size
+    /// The number of bonding pairs.
     pub fn len(&self) -> usize {
         self.inner.len()
+    }
+
+    /// The number of frames for each bonding pair.
+    pub fn nframes(&self) -> usize {
+        self.nframes
     }
 }
 // eb6afa69 ends here
@@ -213,6 +213,28 @@ fn test_find_noise_codes() {
 }
 // 1d27bbdc ends here
 
+// [[file:../../trajectory.note::3b9c65f4][3b9c65f4]]
+use gchemol::Molecule;
+
+impl BondingStates {
+    /// Construct `BondingStates` from bonds of each `Molecule` in `mols`.
+    pub fn from_molecules<'a>(mols: impl IntoIterator<Item = &'a Molecule>) -> Self {
+        let mut states = Self::default();
+        for (iframe, mol) in mols.into_iter().enumerate() {
+            for (u, v, _) in mol.bonds() {
+                states.set_frame(iframe, [u, v], true);
+            }
+        }
+        states
+    }
+
+    /// Returns an iterator over bonding pairs.
+    pub fn bonding_pairs(&self) -> impl Iterator<Item = [usize; 2]> + '_ {
+        self.inner.keys().copied()
+    }
+}
+// 3b9c65f4 ends here
+
 // [[file:../../trajectory.note::ace163f1][ace163f1]]
 #[test]
 fn test_bonding_states() -> Result<()> {
@@ -224,13 +246,7 @@ fn test_bonding_states() -> Result<()> {
         mol.rebond();
     }
 
-    let mut states = BondingStates::default();
-    for iframe in 0..10 {
-        for (u, v, _) in mols[iframe].bonds() {
-            states.set_frame(iframe, [u, v], true);
-        }
-    }
-
+    let states = BondingStates::from_molecules(&mols[..10]);
     // bonded atom 208-212
     assert_eq!(states.get_frame(2, [208, 212]), true);
     assert_eq!(states.get_frame(20, [208, 212]), false);
@@ -241,14 +257,9 @@ fn test_bonding_states() -> Result<()> {
     assert_eq!(states.get_frame(4, [208, 207]), true);
 
     // test noise removing with more frames
-    let mut states = BondingStates::default();
-    for iframe in 0..mols.len() {
-        for (u, v, _) in mols[iframe].bonds() {
-            states.set_frame(iframe, [u, v], true);
-        }
-    }
+    let mut states = BondingStates::from_molecules(&mols);
     // bonding events code
-    let keys: Vec<_> = states.inner.keys().copied().collect();
+    let keys: Vec<_> = states.bonding_pairs().collect();
     for &[u, v] in &keys {
         println!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
     }
