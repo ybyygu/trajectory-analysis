@@ -89,8 +89,10 @@ impl BondingStates {
 
 // [[file:../../trajectory.note::1d27bbdc][1d27bbdc]]
 impl BondingStates {
-    /// Find noise events for atom pair in `key`. Returns the
-    /// positions of noise bonding states affected.
+    /// Remove noise events for atom pair in `key` with a short
+    /// `noise_event_life`. Returns the positions of noise bonding
+    /// events occured in the frames of bonding states for pair of
+    /// atoms in `key`.
     ///
     /// # NOTE
     /// These states in begin and end sides with `noise_event_life` items are
