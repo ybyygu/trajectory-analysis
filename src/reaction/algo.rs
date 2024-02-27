@@ -25,7 +25,7 @@ fn get_active_molecules(mols: &[Molecule]) -> Result<Vec<Molecule>> {
         m = i + 1;
     }
     let n = frames.len();
-    println!("processed {m} frames, found {n} bonding events");
+    println!("processed {m} frames, found {n} reactive frames");
 
     Ok(frames)
 }
@@ -34,22 +34,62 @@ fn get_active_molecules(mols: &[Molecule]) -> Result<Vec<Molecule>> {
 // [[file:../../trajectory.note::f367b105][f367b105]]
 fn remove_inactive_bonding_pairs(mols: &[Molecule]) -> BondingStates {
     let mut states = BondingStates::from_molecules(mols);
+    let n_pairs = states.len();
     let n = states.remove_inactive_bonding_pairs();
-    println!("Removed {n} inactive bonding paris.");
+    println!("Removed {n} inactive bonding paris from {n_pairs} in total.");
     states
 }
 // f367b105 ends here
 
-// [[file:../../trajectory.note::*step3][step3:1]]
-fn remove_noise_bonding_events(states: &mut BondingStates) -> Result<()> {
-    todo!()
+// [[file:../../trajectory.note::eb075c08][eb075c08]]
+fn remove_noise_bonding_events(states: &mut BondingStates, noise_event_life: usize) -> Vec<([usize; 2], Vec<usize>)> {
+    let keys: Vec<_> = states.bonding_pairs().collect();
+    let mut bonds_to_repair = Vec::new();
+    for key in keys {
+        // the frames with noise bonding states which should be
+        // inverted (bonded => unbonded, unbonded => bonded)
+        let frames = states.remove_noise_events(key, noise_event_life);
+        bonds_to_repair.push((key, frames));
+    }
+    bonds_to_repair
 }
-// step3:1 ends here
+// eb075c08 ends here
+
+// [[file:../../trajectory.note::e92233b2][e92233b2]]
+fn repair_bonding_states(mols: &mut [Molecule], bonds_to_repair: &[([usize; 2], Vec<usize>)]) {
+    use gchemol::Bond;
+
+    for ([u, v], frames) in bonds_to_repair {
+        let u = *u;
+        let v = *v;
+        for &i in frames {
+            if mols[i].has_bond(u, v) {
+                mols[i].remove_bond(u, v);
+            } else {
+                mols[i].add_bond(u, v, Bond::default());
+            }
+        }
+    }
+}
+// e92233b2 ends here
+
+// [[file:../../trajectory.note::c617a958][c617a958]]
+fn find_reactions(mols: &[Molecule], states: &BondingStates, noise_event_life: usize) {
+    let mol_indices = states.find_reactive_bonds(noise_event_life);
+    for [i, j] in mol_indices {
+        let mi = &mols[dbg!(i)];
+        let mj = &mols[dbg!(j)];
+        let x = super::get_reaction_composition(mi, mj);
+        dbg!(x);
+    }
+}
+// c617a958 ends here
 
 // [[file:../../trajectory.note::dd2f60bb][dd2f60bb]]
 #[test]
 fn test_reaction_algo() -> Result<()> {
     let f = "tests/files/lty.xyz";
+    let noise_event_life = 5;
 
     let mut mols: Vec<_> = gchemol::io::read(f)?.collect();
     // create bonds before create trajectory
@@ -58,18 +98,21 @@ fn test_reaction_algo() -> Result<()> {
         let frame = i + 1;
         mol.set_title(format!("{frame}"));
     }
-
-    let mols = get_active_molecules(&mols)?;
+    let mut mols = get_active_molecules(&mols)?;
     let mut states = remove_inactive_bonding_pairs(&mols);
-    remove_noise_bonding_events(&mut states);
-    // let mut states = BondingStates::from_molecules(&mols);
-    // dbg!(states.nframes());
-    // dbg!(states.len());
-    // let keys: Vec<_> = states.bonding_pairs().collect();
-    // for &[u, v] in &keys {
-    // println!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
-    // }
+    let bonds_to_repair = remove_noise_bonding_events(&mut states, noise_event_life);
+    assert_eq!(states.len(), 74);
+    let keys: Vec<_> = states.bonding_pairs().collect();
+    for &[u, v] in &keys {
+        println!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
+    }
+    repair_bonding_states(&mut mols, &bonds_to_repair);
+    let n = mols.len();
+    let mols_ = get_active_molecules(&mols[noise_event_life..n - noise_event_life])?;
+    assert_eq!(mols_.len(), 3);
 
+    let x = find_reactions(&mols, &states, noise_event_life);
+    dbg!(x);
     // let traj = get_bonding_events_trajectory(&mols)?;
     // let events = get_bonding_events(&traj, None)?;
     // assert_eq!(events.len(), 76);

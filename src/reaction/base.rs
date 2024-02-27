@@ -141,15 +141,18 @@ impl BondingStates {
         let iend = self.nframes - noise_event_life;
         assert!(istart < iend, "invalid istart..iend {istart}..{iend}");
 
-        let mut reactive_bonds = vec![];
+        let mut reactive_bonds = HashSet::new();
         for &bond in self.inner.keys() {
             let states: Vec<_> = self.bonding_states_code(bond).collect();
-            let no_reaction = states[istart..iend].iter().all(|&x| x) || states[istart..iend].iter().all(|&x| !x);
-            if !no_reaction {
-                reactive_bonds.push(bond);
+            let changes = find_reactive_changes(&states[istart..iend]);
+            if !changes.is_empty() {
+                for [u, v] in changes {
+                    // fix index shift issue
+                    reactive_bonds.insert([u + istart, v + istart]);
+                }
             }
         }
-        reactive_bonds
+        reactive_bonds.into_iter().collect()
     }
 }
 
@@ -212,6 +215,14 @@ pub(self) fn fix_noise_states(states: &mut [bool], noise_event_life: usize) -> V
     positions_inverted
 }
 
+/// Find positions that have chemical reactions
+fn find_reactive_changes(states: &[bool]) -> Vec<[usize; 2]> {
+    assert!(!states.is_empty());
+
+    let ecode = states_to_events(states);
+    ecode.match_indices(&['F', 'B']).map(|(p, _)| [p, p + 1]).collect()
+}
+
 #[test]
 fn test_find_noise_codes() {
     let mut states: Vec<_> = "+++--+++---+++++"
@@ -236,6 +247,12 @@ fn test_find_noise_codes() {
     fix_noise_states(&mut states, 1);
     let ecode = states_to_events(&states);
     assert_eq!(ecode, "-------B--F----");
+
+    let frames = find_reactive_changes(&states);
+    assert_eq!(frames.len(), 2);
+    for [i, j] in frames {
+        assert_ne!(states[i], states[j]);
+    }
 }
 // 1d27bbdc ends here
 
