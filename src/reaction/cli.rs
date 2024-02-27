@@ -22,6 +22,15 @@ pub struct ReactionCli {
 
     #[command(flatten)]
     verbose: Verbosity,
+
+    /// The noise bonding event life for noise removing algorithm.
+    #[clap(short = 'l', default_value = "20")]
+    noise_event_life: usize,
+
+    /// The chunk size for processing trajectory frames. Please note,
+    /// this value should not be smaller than 2*noise_event_life + 1
+    #[clap(short = 'n', default_value = "200")]
+    chunk_size: usize,
 }
 
 impl ReactionCli {
@@ -40,7 +49,7 @@ impl ReactionCli {
 fn process(cli: &ReactionCli) -> Result<()> {
     use crate::reaction::algo::find_chemical_reactions_in_trajectory;
 
-    find_chemical_reactions_in_trajectory(&cli.trjfile, cli.write_reaction_species)?;
+    find_chemical_reactions_in_trajectory(&cli.trjfile, cli.write_reaction_species, cli.noise_event_life, cli.chunk_size)?;
 
     Ok(())
 }
