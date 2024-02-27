@@ -6,6 +6,7 @@ use gchemol::Molecule;
 // [[file:../trajectory.note::29d234b7][29d234b7]]
 mod algo;
 mod base;
+mod cli;
 mod io;
 // 29d234b7 ends here
 
@@ -103,6 +104,12 @@ pub fn get_reaction(mol1: &Molecule, mol2: &Molecule) -> Result<Reaction> {
         reaction.products = products.iter().map(|mol| mol.numbers().collect_vec()).collect();
         reaction.reactants_fingerprints = reactants.iter().map(|mol| mol.fingerprint()).collect();
         reaction.products_fingerprints = products.iter().map(|mol| mol.fingerprint()).collect();
+        // write reactants/products to files
+        for mol in reactants.iter().chain(&products) {
+            let fp = mol.fingerprint();
+            let f = format!("/tmp/reaction-species/{fp}.mol2");
+            io::write_molecule(f.as_ref(), &mol)?;
+        }
     }
 
     Ok(reaction)
