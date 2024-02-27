@@ -13,7 +13,7 @@ mod base;
 /// example, for two molecules in `mols`, returns "H2 + CH4"
 fn get_composition<'a>(mols: impl IntoIterator<Item = &'a Molecule>) -> String {
     let formula_list: HashSet<_> = mols.into_iter().map(|mol| mol.formula()).collect();
-    formula_list.into_iter().join(" ")
+    formula_list.into_iter().join(" + ")
 }
 // 707e344d ends here
 

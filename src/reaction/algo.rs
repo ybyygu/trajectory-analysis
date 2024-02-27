@@ -77,8 +77,8 @@ fn repair_bonding_states(mols: &mut [Molecule], bonds_to_repair: &[([usize; 2], 
 fn find_reactions(mols: &[Molecule], states: &BondingStates, noise_event_life: usize) {
     let mol_indices = states.find_reactive_bonds(noise_event_life);
     for [i, j] in mol_indices {
-        let mi = &mols[dbg!(i)];
-        let mj = &mols[dbg!(j)];
+        let mi = &mols[i];
+        let mj = &mols[j];
         let x = super::get_reaction_composition(mi, mj);
         dbg!(x);
     }
