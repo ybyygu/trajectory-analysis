@@ -325,10 +325,11 @@ fn test_reaction_xyz() -> Result<()> {
 
     let traj = get_bonding_events_trajectory(&mols)?;
     let events = get_bonding_events(&traj, None)?;
-    // assert_eq!(events.len(), 76);
-    // let events = get_bonding_events(&traj, 5)?;
-    // assert_eq!(events.len(), 3);
-    events.print();
+    assert_eq!(events.len(), 76);
+    // events.print();
+    let events = get_bonding_events(&traj, 5)?;
+    assert_eq!(events.len(), 3);
+    // events.print();
 
     Ok(())
 }

@@ -162,15 +162,27 @@ fn find_noise_codes(code: &str, n_space: usize) -> Vec<(usize, usize)> {
 
     // NOTE: here we use B for Breaking, F for Forming. These chars
     // are 1 char long, and will not break regex search logical.
-    let pattern = format!(r#"B(-{{0,{n_space}}})F|F(-{{0,{n_space}}})B"#);
-    let re = Regex::new(&pattern).unwrap();
-    let mut positions = vec![];
+    let pattern1 = format!(r#"B(-{{0,{n_space}}}?)F"#);
+    let pattern2 = format!(r#"F(-{{0,{n_space}}}?)B"#);
+    let re1 = Regex::new(&pattern1).unwrap();
+    let re2 = Regex::new(&pattern2).unwrap();
+    let mut positions1 = vec![];
+    let mut positions2 = vec![];
 
-    for mat in re.find_iter(code) {
-        positions.push((mat.start(), mat.end()));
+    for mat in re1.find_iter(code) {
+        positions1.push((mat.start(), mat.end()));
     }
 
-    positions
+    for mat in re2.find_iter(code) {
+        positions2.push((mat.start(), mat.end()));
+    }
+
+    // we select the one that matches more
+    if positions1.len() < positions2.len() {
+        positions2
+    } else {
+        positions1
+    }
 }
 
 fn states_to_events(states: &[bool]) -> String {
@@ -225,6 +237,9 @@ fn find_reactive_changes(states: &[bool]) -> Vec<[usize; 2]> {
 
 #[test]
 fn test_find_noise_codes() {
+    let xx = find_noise_codes("-B---F-B-F--B--F---B", 5);
+    dbg!(xx);
+
     let mut states: Vec<_> = "+++--+++---+++++"
         .chars()
         .map(|x| if x == '+' { true } else { false })

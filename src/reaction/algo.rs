@@ -100,6 +100,10 @@ fn test_reaction_algo() -> Result<()> {
     }
     let mut mols = get_active_molecules(&mols)?;
     let mut states = remove_inactive_bonding_pairs(&mols);
+    let keys: Vec<_> = states.bonding_pairs().collect();
+    for &[u, v] in &keys {
+        println!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
+    }
     let bonds_to_repair = remove_noise_bonding_events(&mut states, noise_event_life);
     assert_eq!(states.len(), 74);
     let keys: Vec<_> = states.bonding_pairs().collect();
@@ -109,16 +113,10 @@ fn test_reaction_algo() -> Result<()> {
     repair_bonding_states(&mut mols, &bonds_to_repair);
     let n = mols.len();
     let mols_ = get_active_molecules(&mols[noise_event_life..n - noise_event_life])?;
-    assert_eq!(mols_.len(), 3);
+    assert_eq!(mols_.len(), 2);
 
     let x = find_reactions(&mols, &states, noise_event_life);
     dbg!(x);
-    // let traj = get_bonding_events_trajectory(&mols)?;
-    // let events = get_bonding_events(&traj, None)?;
-    // assert_eq!(events.len(), 76);
-    // let events = get_bonding_events(&traj, 5)?;
-    // assert_eq!(events.len(), 3);
-    // events.print();
 
     Ok(())
 }
