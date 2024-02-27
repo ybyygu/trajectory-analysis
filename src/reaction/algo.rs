@@ -98,7 +98,7 @@ fn find_reactions(
 // [[file:../../trajectory.note::2ebc3172][2ebc3172]]
 use super::io::{Reaction, ReactionWriter};
 
-pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, pqfile: &Path, write_reaction_species: bool) -> Result<()> {
+pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, write_reaction_species: bool) -> Result<()> {
     use std::collections::VecDeque;
 
     let n_chunk: usize = 100;
@@ -108,12 +108,19 @@ pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, pqfile: &Path, writ
     let mut window = VecDeque::new();
     let mut ichunk = 0;
     // write reactions in parquet format
-    let mut writer = ReactionWriter::new(pqfile)?;
+    // let pqfile: PathBuf = if let Some(p) = trjfile.parent() {
+    //     p.join("reaction.pq")
+    // } else {
+    //     "reaction.pq".to_owned()
+    // };
+    let pqfile = trjfile.with_file_name("reaction.pq");
+    let mut writer = ReactionWriter::new(&pqfile)?;
 
     let mut reaction_species_dir = None;
     if write_reaction_species {
         if let Some(p) = trjfile.parent() {
-            reaction_species_dir = Some(p);
+            let dir = p.join("reaction-species");
+            reaction_species_dir = Some(dir);
         }
     }
     for (i, mut mol) in mols.enumerate() {
@@ -123,7 +130,7 @@ pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, pqfile: &Path, writ
             // Process the current window
             // Create one contiguous slice of `Molecule`
             println!("Processing chunk {ichunk}");
-            let reactions = process_mol_chunk(window.make_contiguous(), reaction_species_dir)?;
+            let reactions = process_mol_chunk(window.make_contiguous(), reaction_species_dir.as_deref())?;
             writer.write_reactions(&reactions);
             // Prepare for the next window: keep the last `overlap_size` elements
             while window.len() > overlap_size {
@@ -150,13 +157,13 @@ fn get_chemical_reactions(
     let mut states = remove_inactive_bonding_pairs(&mols);
     let keys: Vec<_> = states.bonding_pairs().collect();
     for &[u, v] in &keys {
-        println!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
+        info!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
     }
-    println!("When noise events removed:");
+    info!("When noise events removed:");
     let bonds_to_repair = remove_noise_bonding_events(&mut states, noise_event_life);
     let keys: Vec<_> = states.bonding_pairs().collect();
     for &[u, v] in &keys {
-        println!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
+        info!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
     }
 
     repair_bonding_states(&mut mols, &bonds_to_repair);

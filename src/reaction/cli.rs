@@ -15,11 +15,8 @@ pub struct ReactionCli {
     /// The trajectory file in xyz format.
     trjfile: PathBuf,
 
-    /// Path to result file in parquet format, which can be analyzed
-    /// using polars in python.
-    #[clap(short = 'o', default_value = "reaction.pq")]
-    pqfile: PathBuf,
-
+    /// Write reaction species (if eached, these files can be found in
+    /// the same dir as trajectory file).
     #[clap(short = 'w')]
     write_reaction_species: bool,
 
@@ -30,6 +27,8 @@ pub struct ReactionCli {
 impl ReactionCli {
     pub fn enter_main() -> Result<()> {
         let args = Self::parse();
+        args.verbose.setup_logger();
+
         process(&args)?;
 
         Ok(())
@@ -37,12 +36,12 @@ impl ReactionCli {
 }
 // 7a9dfc6b ends here
 
-// [[file:../../trajectory.note::4ea78e67][4ea78e67]]
+// [[file:../../trajectory.note::093b2b9c][093b2b9c]]
 fn process(cli: &ReactionCli) -> Result<()> {
     use crate::reaction::algo::find_chemical_reactions_in_trajectory;
 
-    find_chemical_reactions_in_trajectory(&cli.trjfile, &cli.pqfile, cli.write_reaction_species)?;
+    find_chemical_reactions_in_trajectory(&cli.trjfile, cli.write_reaction_species)?;
 
     Ok(())
 }
-// 4ea78e67 ends here
+// 093b2b9c ends here

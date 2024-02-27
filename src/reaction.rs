@@ -242,7 +242,7 @@ impl BondingEvents {
 ///   bonding event codes along time axis.
 fn print_bonding_events(events: &HashMap<[usize; 2], Vec<i32>>) {
     if events.is_empty() {
-        println!("No chemical events");
+        warn!("No chemical events");
         return;
     }
 
@@ -250,17 +250,17 @@ fn print_bonding_events(events: &HashMap<[usize; 2], Vec<i32>>) {
     let mut keys: Vec<_> = events.keys().copied().collect();
     keys.sort();
 
-    println!("bond pair: reaction codes");
+    info!("bond pair: reaction codes");
     for [u, v] in keys {
         let signals = &events[&[u, v]];
         let codes: String = signals.iter().map(|&s| map[&s]).collect();
-        println!("{:03}-{:03}: {}", u, v, codes);
+        info!("{:03}-{:03}: {}", u, v, codes);
     }
 
     let jmol_selection: Vec<_> = events.keys().flatten().map(|x| x.to_string()).collect();
     let jmol_console_command = format!("select atomno=[{}]\nselectionhalo\nlabel %i", jmol_selection.join(","));
-    println!("If view reaction atoms in jmol, you can use below commands:");
-    println!("{}", jmol_console_command);
+    info!("If view reaction atoms in jmol, you can use below commands:");
+    info!("{}", jmol_console_command);
 }
 // 6f57ef8b ends here
 
@@ -288,7 +288,7 @@ pub fn get_bonding_events_trajectory(mols: &[Molecule]) -> Result<Trajectory> {
         m = i + 1;
     }
     let n = frames.len();
-    println!("processed {m} frames, found {n} bonding events");
+    info!("processed {m} frames, found {n} bonding events");
     let traj = Trajectory::try_from(frames)?;
 
     Ok(traj)
