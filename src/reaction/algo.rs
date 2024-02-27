@@ -153,7 +153,9 @@ fn get_chemical_reactions(
     // root dir for writing reaction species
     reaction_species_dir: Option<&Path>,
 ) -> Result<Vec<Reaction>> {
-    let mut mols = get_active_molecules(&mols)?;
+    // NOTE: this is bugging
+    // let mut mols = get_active_molecules(&mols)?;
+    let mut mols = mols.to_vec();
     let mut states = remove_inactive_bonding_pairs(&mols);
     let keys: Vec<_> = states.bonding_pairs().collect();
     for &[u, v] in &keys {
@@ -167,8 +169,11 @@ fn get_chemical_reactions(
     }
 
     repair_bonding_states(&mut mols, &bonds_to_repair);
-    let n = mols.len();
-    let mols_ = get_active_molecules(&mols[noise_event_life..n - noise_event_life])?;
+    // let n = mols.len();
+    // let istart = noise_event_life;
+    // let iend = n - noise_event_life;
+    // assert!(istart < iend, "invalid states: {states:?}");
+    // let mols = get_active_molecules(&mols[istart..iend])?;
     find_reactions(&mols, &states, noise_event_life, reaction_species_dir)
 }
 

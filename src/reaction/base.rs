@@ -215,7 +215,7 @@ pub(self) fn fix_noise_states(states: &mut [bool], noise_event_life: usize) -> V
     // the valid region of active frames considering `noise_event_life`
     let istart = noise_event_life;
     let iend = states.len() - noise_event_life;
-    assert!(istart < iend, "invalid active frame region: {istart}, {iend}");
+    assert!(istart < iend, "invalid active frame region: {istart}, {iend}, {states:?}");
     for (start, end) in matched_positions {
         for i in start + 1..end {
             if i >= istart && i < iend {
