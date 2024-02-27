@@ -6,6 +6,7 @@ use gchemol::Molecule;
 // [[file:../trajectory.note::29d234b7][29d234b7]]
 mod algo;
 mod base;
+mod io;
 // 29d234b7 ends here
 
 // [[file:../trajectory.note::707e344d][707e344d]]
@@ -18,6 +19,7 @@ fn get_composition<'a>(mols: impl IntoIterator<Item = &'a Molecule>) -> String {
 // 707e344d ends here
 
 // [[file:../trajectory.note::38d6eaa6][38d6eaa6]]
+use io::Reaction;
 use std::collections::BTreeSet as HashSet;
 
 fn get_bonding_changes(mol1: &Molecule, mol2: &Molecule) -> [HashSet<[usize; 2]>; 2] {
@@ -32,7 +34,7 @@ fn get_bonding_changes(mol1: &Molecule, mol2: &Molecule) -> [HashSet<[usize; 2]>
 /// Detects reaction between `mol1` and `mol2` from bond connectivity
 /// changes. Returns reactants and products in list of `Molecule`
 /// objects
-pub fn get_reaction(mol1: &Molecule, mol2: &Molecule) -> Result<([Vec<Molecule>; 2], [HashSet<[usize; 2]>; 2])> {
+fn get_reaction_mechanism(mol1: &Molecule, mol2: &Molecule) -> Result<([Vec<Molecule>; 2], [HashSet<[usize; 2]>; 2])> {
     ensure!(mol1.matching_configuration(mol2), "invalid molecule pair for reaction!");
 
     let [forming, breaking] = get_bonding_changes(mol1, mol2);
@@ -76,7 +78,7 @@ pub fn get_reaction(mol1: &Molecule, mol2: &Molecule) -> Result<([Vec<Molecule>;
 /// Return chemical reaction composition bewteen `mol1` and `mol2` by
 /// analysis of bond changes between `mol1` and `mol2`.
 pub fn get_reaction_composition(mol1: &Molecule, mol2: &Molecule) -> Result<String> {
-    let ([reactants, products], _) = get_reaction(mol1, mol2)?;
+    let ([reactants, products], _) = get_reaction_mechanism(mol1, mol2)?;
     let mut reaction_composition = String::new();
     if !reactants.is_empty() && !products.is_empty() {
         let reactants_composition = get_composition(&reactants);
@@ -84,6 +86,26 @@ pub fn get_reaction_composition(mol1: &Molecule, mol2: &Molecule) -> Result<Stri
         reaction_composition = format!("{} => {}", reactants_composition, products_composition);
     }
     Ok(reaction_composition)
+}
+
+pub fn get_reaction(mol1: &Molecule, mol2: &Molecule) -> Result<Reaction> {
+    // for Molecule.fingerprint method
+    use spdkit::prelude::*;
+
+    let mut reaction = Reaction::default();
+
+    let ([reactants, products], _) = get_reaction_mechanism(mol1, mol2)?;
+    let mut reaction_composition = String::new();
+    if !reactants.is_empty() && !products.is_empty() {
+        reaction.reactants_composition = get_composition(&reactants);
+        reaction.products_composition = get_composition(&products);
+        reaction.reactants = reactants.iter().map(|mol| mol.numbers().collect_vec()).collect();
+        reaction.products = products.iter().map(|mol| mol.numbers().collect_vec()).collect();
+        reaction.reactants_fingerprints = reactants.iter().map(|mol| mol.fingerprint()).collect();
+        reaction.products_fingerprints = products.iter().map(|mol| mol.fingerprint()).collect();
+    }
+
+    Ok(reaction)
 }
 // 38d6eaa6 ends here
 

@@ -6,21 +6,23 @@ edition = "2021"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
 [dependencies]
-serde = {version="1", features = ["derive"]}
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 clap = { version = "4", features = ["derive", "env"] }
 indexmap = "1.7"
 indicatif = "0.16"
 streaming-stats = "0.2"
 text-parser = { version = "0.4.0", package = "gchemol-parser" }
-gut = { version = "0.4", package="gchemol-gut" }
-vecfx = { version = "0.1", features= ["nalgebra"] }
-gchemol = { version = "0.1.6", features=["adhoc"]}
+gut = { version = "0.4", package = "gchemol-gut" }
+vecfx = { version = "0.1", features = ["nalgebra"] }
+gchemol = { version = "0.1.6", features = ["adhoc"] }
 # plotly = "0.6"
-parquet-tools = { version = "0.1", package = "gosh-dataset"}
-parquet = "28.0.0"
-parquet_derive = "28.0.0"
+gosh-dataset = { version = "0.2" }
+# parquet = "28.0.0"
+# parquet_derive = "28.0.0"
 regex = "1.10.3"
+spdkit = { version = "0.1" }
+
 
 [features]
 # for easy development
