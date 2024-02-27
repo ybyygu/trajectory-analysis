@@ -60,8 +60,8 @@ impl BondingStates {
 // [[file:../../trajectory.note::45ddc634][45ddc634]]
 impl BondingStates {
     /// Return bonding states code for pair u--v
-    pub fn bonding_states_code(&self, key: [usize; 2]) -> Vec<bool> {
-        (0..self.nframes).map(|iframe| self.get_frame(iframe, key)).collect()
+    pub fn bonding_states_code(&self, key: [usize; 2]) -> impl Iterator<Item = bool> + '_ {
+        (0..self.nframes).map(move |iframe| self.get_frame(iframe, key))
     }
 
     /// Return human readable bonding events code for pair of atom `key` u--v
@@ -86,6 +86,30 @@ impl BondingStates {
     }
 }
 // 45ddc634 ends here
+
+// [[file:../../trajectory.note::a4eba9be][a4eba9be]]
+impl BondingStates {
+    /// Remove bonding pairs no bond breaking or forming
+    /// changes. Returns the number of removed bonding pairs.
+    pub fn remove_inactive_bonding_pairs(&mut self) -> usize {
+        let keys: Vec<_> = self.bonding_pairs().collect();
+
+        // find bonding pairs that have no changes
+        let inactive_keys1 = keys.iter().filter(|&key| self.bonding_states_code(*key).all(|bonded| bonded));
+        let inactive_keys2 = keys
+            .iter()
+            .filter(|&key| self.bonding_states_code(*key).all(|bonded| !bonded));
+
+        // remove these bonding pairs
+        let mut n_removed = 0;
+        for key in inactive_keys1.chain(inactive_keys2).collect_vec() {
+            let _ = self.inner.remove(key);
+            n_removed += 1;
+        }
+        n_removed
+    }
+}
+// a4eba9be ends here
 
 // [[file:../../trajectory.note::1d27bbdc][1d27bbdc]]
 impl BondingStates {
@@ -119,7 +143,7 @@ impl BondingStates {
 
         let mut reactive_bonds = vec![];
         for &bond in self.inner.keys() {
-            let states = self.bonding_states_code(bond);
+            let states: Vec<_> = self.bonding_states_code(bond).collect();
             let no_reaction = states[istart..iend].iter().all(|&x| x) || states[istart..iend].iter().all(|&x| !x);
             if !no_reaction {
                 reactive_bonds.push(bond);

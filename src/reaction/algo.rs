@@ -32,27 +32,19 @@ fn get_active_molecules(mols: &[Molecule]) -> Result<Vec<Molecule>> {
 // 22ecaa51 ends here
 
 // [[file:../../trajectory.note::f367b105][f367b105]]
-fn remove_noising_bonds(mols: &[Molecule], noise_event_life: usize) -> Result<()> {
+fn remove_inactive_bonding_pairs(mols: &[Molecule]) -> BondingStates {
     let mut states = BondingStates::from_molecules(mols);
-    let keys: Vec<_> = states.bonding_pairs().collect();
-    for key in keys {
-        let [u, v] = key;
-        // let code = states.bonding_events_code(key);
-        // println!("{u:03}-{v:03}: {code}");
-        let xx = states.remove_noise_events(key, noise_event_life);
-        // let code = states.bonding_events_code(key);
-        // println!("{u:03}-{v:03}: {code}");
-
-        dbg!(key, xx);
-    }
-
-    todo!()
+    let n = states.remove_inactive_bonding_pairs();
+    println!("Removed {n} inactive bonding paris.");
+    states
 }
 // f367b105 ends here
 
-// [[file:../../trajectory.note::*core][core:1]]
-
-// core:1 ends here
+// [[file:../../trajectory.note::*step3][step3:1]]
+fn remove_noise_bonding_events(states: &mut BondingStates) -> Result<()> {
+    todo!()
+}
+// step3:1 ends here
 
 // [[file:../../trajectory.note::dd2f60bb][dd2f60bb]]
 #[test]
@@ -68,14 +60,15 @@ fn test_reaction_algo() -> Result<()> {
     }
 
     let mols = get_active_molecules(&mols)?;
-    // remove_noising_bonds(&mols, 5);
-    let mut states = BondingStates::from_molecules(&mols);
+    let mut states = remove_inactive_bonding_pairs(&mols);
+    remove_noise_bonding_events(&mut states);
+    // let mut states = BondingStates::from_molecules(&mols);
     // dbg!(states.nframes());
     // dbg!(states.len());
-    let keys: Vec<_> = states.bonding_pairs().collect();
-    for &[u, v] in &keys {
-        println!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
-    }
+    // let keys: Vec<_> = states.bonding_pairs().collect();
+    // for &[u, v] in &keys {
+    // println!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
+    // }
 
     // let traj = get_bonding_events_trajectory(&mols)?;
     // let events = get_bonding_events(&traj, None)?;
