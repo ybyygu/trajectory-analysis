@@ -74,13 +74,19 @@ fn repair_bonding_states(mols: &mut [Molecule], bonds_to_repair: &[([usize; 2], 
 // e92233b2 ends here
 
 // [[file:../../trajectory.note::c617a958][c617a958]]
-fn find_reactions(mols: &[Molecule], states: &BondingStates, noise_event_life: usize) -> Result<Vec<Reaction>> {
+fn find_reactions(
+    mols: &[Molecule],
+    states: &BondingStates,
+    noise_event_life: usize,
+    // the root dir for writing reaction species
+    reaction_species_dir: Option<&Path>,
+) -> Result<Vec<Reaction>> {
     let mol_indices = states.find_reactive_bonds(noise_event_life);
     let mut reactions = vec![];
     for [i, j] in mol_indices {
         let mi = &mols[i];
         let mj = &mols[j];
-        let mut reaction = super::get_reaction(mi, mj)?;
+        let mut reaction = super::get_reaction(mi, mj, reaction_species_dir)?;
         reaction.local_frame = j;
         reaction.global_frame = mj.title();
         reactions.push(reaction);
@@ -92,17 +98,24 @@ fn find_reactions(mols: &[Molecule], states: &BondingStates, noise_event_life: u
 // [[file:../../trajectory.note::2ebc3172][2ebc3172]]
 use super::io::{Reaction, ReactionWriter};
 
-pub fn find_chemical_reactions_in_trajectory(f: &str) -> Result<()> {
+pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, pqfile: &Path, write_reaction_species: bool) -> Result<()> {
     use std::collections::VecDeque;
 
     let n_chunk: usize = 100;
     let overlap_size: usize = 5;
 
-    let mut mols = gchemol::io::read(f)?;
+    let mut mols = gchemol::io::read(trjfile)?;
     let mut window = VecDeque::new();
     let mut ichunk = 0;
     // write reactions in parquet format
-    let mut writer = ReactionWriter::new("/tmp/reaction.pq".as_ref())?;
+    let mut writer = ReactionWriter::new(pqfile)?;
+
+    let mut reaction_species_dir = None;
+    if write_reaction_species {
+        if let Some(p) = trjfile.parent() {
+            reaction_species_dir = Some(p);
+        }
+    }
     for (i, mut mol) in mols.enumerate() {
         mol.set_title(format!("{i}"));
         window.push_back(mol);
@@ -110,7 +123,7 @@ pub fn find_chemical_reactions_in_trajectory(f: &str) -> Result<()> {
             // Process the current window
             // Create one contiguous slice of `Molecule`
             println!("Processing chunk {ichunk}");
-            let reactions = process_mol_chunk(window.make_contiguous())?;
+            let reactions = process_mol_chunk(window.make_contiguous(), reaction_species_dir)?;
             writer.write_reactions(&reactions);
             // Prepare for the next window: keep the last `overlap_size` elements
             while window.len() > overlap_size {
@@ -127,7 +140,12 @@ pub fn find_chemical_reactions_in_trajectory(f: &str) -> Result<()> {
     Ok(())
 }
 
-fn get_chemical_reactions(mols: &[Molecule], noise_event_life: usize) -> Result<Vec<Reaction>> {
+fn get_chemical_reactions(
+    mols: &[Molecule],
+    noise_event_life: usize,
+    // root dir for writing reaction species
+    reaction_species_dir: Option<&Path>,
+) -> Result<Vec<Reaction>> {
     let mut mols = get_active_molecules(&mols)?;
     let mut states = remove_inactive_bonding_pairs(&mols);
     let keys: Vec<_> = states.bonding_pairs().collect();
@@ -144,11 +162,11 @@ fn get_chemical_reactions(mols: &[Molecule], noise_event_life: usize) -> Result<
     repair_bonding_states(&mut mols, &bonds_to_repair);
     let n = mols.len();
     let mols_ = get_active_molecules(&mols[noise_event_life..n - noise_event_life])?;
-    find_reactions(&mols, &states, noise_event_life)
+    find_reactions(&mols, &states, noise_event_life, reaction_species_dir)
 }
 
 /// Create bonds and find chemical reactions in this chunk
-fn process_mol_chunk(chunk: &mut [Molecule]) -> Result<Vec<Reaction>> {
+fn process_mol_chunk(chunk: &mut [Molecule], reaction_species_dir: Option<&Path>) -> Result<Vec<Reaction>> {
     chunk.into_par_iter().for_each(|mut mol| {
         // ignore molecules already `rebond` in overlap region
         if mol.nbonds() == 0 {
@@ -156,15 +174,7 @@ fn process_mol_chunk(chunk: &mut [Molecule]) -> Result<Vec<Reaction>> {
         }
     });
 
-    get_chemical_reactions(chunk, 5)
-}
-
-#[test]
-fn test_xyz_chunks() -> Result<()> {
-    let f = "/tmp/a.xyz";
-    find_chemical_reactions_in_trajectory(f)?;
-
-    Ok(())
+    get_chemical_reactions(chunk, 5, reaction_species_dir)
 }
 // 2ebc3172 ends here
 
@@ -197,9 +207,6 @@ fn test_reaction_algo() -> Result<()> {
     let n = mols.len();
     let mols_ = get_active_molecules(&mols[noise_event_life..n - noise_event_life])?;
     assert_eq!(mols_.len(), 2);
-
-    let x = find_reactions(&mols, &states, noise_event_life);
-    dbg!(x);
 
     Ok(())
 }

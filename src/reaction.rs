@@ -6,8 +6,9 @@ use gchemol::Molecule;
 // [[file:../trajectory.note::29d234b7][29d234b7]]
 mod algo;
 mod base;
-mod cli;
 mod io;
+
+pub mod cli;
 // 29d234b7 ends here
 
 // [[file:../trajectory.note::707e344d][707e344d]]
@@ -89,7 +90,7 @@ pub fn get_reaction_composition(mol1: &Molecule, mol2: &Molecule) -> Result<Stri
     Ok(reaction_composition)
 }
 
-pub fn get_reaction(mol1: &Molecule, mol2: &Molecule) -> Result<Reaction> {
+pub fn get_reaction(mol1: &Molecule, mol2: &Molecule, reaction_species_dir: Option<&Path>) -> Result<Reaction> {
     // for Molecule.fingerprint method
     use spdkit::prelude::*;
 
@@ -105,10 +106,12 @@ pub fn get_reaction(mol1: &Molecule, mol2: &Molecule) -> Result<Reaction> {
         reaction.reactants_fingerprints = reactants.iter().map(|mol| mol.fingerprint()).collect();
         reaction.products_fingerprints = products.iter().map(|mol| mol.fingerprint()).collect();
         // write reactants/products to files
-        for mol in reactants.iter().chain(&products) {
-            let fp = mol.fingerprint();
-            let f = format!("/tmp/reaction-species/{fp}.mol2");
-            io::write_molecule(f.as_ref(), &mol)?;
+        if let Some(dir) = reaction_species_dir {
+            for mol in reactants.iter().chain(&products) {
+                let fp = mol.fingerprint();
+                let f = dir.join(format!("{fp}.mol2"));
+                io::write_molecule(&f, &mol)?;
+            }
         }
     }
 

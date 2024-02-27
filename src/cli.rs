@@ -42,3 +42,7 @@ impl CountRingsCli {
     }
 }
 // 2a2c5538 ends here
+
+// [[file:../trajectory.note::86912f49][86912f49]]
+pub use crate::reaction::cli::*;
+// 86912f49 ends here
