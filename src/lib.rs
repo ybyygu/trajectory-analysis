@@ -1,13 +1,13 @@
 // [[file:../trajectory.note::d3e7a8f3][d3e7a8f3]]
 #![feature(test)]
 #![feature(result_option_inspect)]
-
 // for lindemann file.stream_len API call
 #![feature(seek_convenience)]
 #![feature(seek_stream_len)]
 
 #[cfg(test)]
-#[macro_use] extern crate approx;
+#[macro_use]
+extern crate approx;
 // d3e7a8f3 ends here
 
 // [[file:../trajectory.note::16fef675][16fef675]]
