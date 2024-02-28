@@ -213,15 +213,15 @@ pub(self) fn fix_noise_states(states: &mut [bool], noise_event_life: usize) -> V
 
     let mut positions_inverted = vec![];
     // the valid region of active frames considering `noise_event_life`
-    let istart = noise_event_life;
-    let iend = states.len() - noise_event_life;
-    assert!(istart < iend, "invalid active frame region: {istart}, {iend}, {states:?}");
+    // let istart = noise_event_life;
+    // let iend = states.len() - noise_event_life;
+    // assert!(istart < iend, "invalid active frame region: {istart}, {iend}, {states:?}");
     for (start, end) in matched_positions {
         for i in start + 1..end {
-            if i >= istart && i < iend {
-                states[i] = !states[i];
-                positions_inverted.push(i);
-            }
+            // if i >= istart && i < iend {
+            states[i] = !states[i];
+            positions_inverted.push(i);
+            // }
         }
     }
     positions_inverted
@@ -237,9 +237,6 @@ fn find_reactive_changes(states: &[bool]) -> Vec<[usize; 2]> {
 
 #[test]
 fn test_find_noise_codes() {
-    let xx = find_noise_codes("-B---F-B-F--B--F---B", 5);
-    dbg!(xx);
-
     let mut states: Vec<_> = "+++--+++---+++++"
         .chars()
         .map(|x| if x == '+' { true } else { false })
@@ -268,8 +265,40 @@ fn test_find_noise_codes() {
     for [i, j] in frames {
         assert_ne!(states[i], states[j]);
     }
+
+    let xx = "--F-------------------------------------------B-------------------------------------------------F-----------------------------------------B-------------------------------F--------------------------------------------------------------------------------------------------------------------------------";
+    let mut states = event_code_to_states(xx);
+    assert_eq!(states_to_events(&states), xx);
+    fix_noise_states(&mut states, 50);
+    let ecode = states_to_events(&states);
+    println!("{}", ecode);
+    println!("{}", ecode);
+    println!("{}", xx);
 }
 // 1d27bbdc ends here
+
+// [[file:../../trajectory.note::53881992][53881992]]
+fn event_code_to_states(ecode: &str) -> Vec<bool> {
+    let mut states = vec![false; ecode.len() + 1];
+    for (i, x) in ecode.chars().enumerate() {
+        let state = match x {
+            '-' => {
+                states[i + 1] = states[i];
+            }
+            'F' => {
+                states[i] = false;
+                states[i + 1] = true;
+            }
+            'B' => {
+                states[i] = true;
+                states[i + 1] = false;
+            }
+            _ => {}
+        };
+    }
+    states
+}
+// 53881992 ends here
 
 // [[file:../../trajectory.note::3b9c65f4][3b9c65f4]]
 use gchemol::Molecule;
