@@ -114,14 +114,24 @@ pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, options: &ReactionO
 
     let step_by = options.read_trajectory_step_by;
     ensure!(step_by != 0, "invalid read_trajectory_step_by option!");
-    let mut mols = gchemol::io::read(trjfile)?.step_by(step_by);
-    let mut window = VecDeque::new();
-    let mut ichunk = 0;
+    if step_by > 1 {
+        println!("Reading trajectory stepping by {step_by} at each frame.");
+    }
+    // Set lattice from extxyz title
+    let mut mols = gchemol::io::read(trjfile)?.step_by(step_by).map(|mut mol| {
+        if let Some(lat) = gchemol::io::formats::ExtxyzFile::read_lattice(&mol.title()) {
+            debug!("Set lattice from extxyz title");
+            mol.set_lattice(lat);
+        }
+        mol
+    });
     // write reactions in parquet format
     let pqfile = trjfile.with_file_name("reaction.pq");
     let mut writer = ReactionWriter::new(&pqfile)?;
 
     let mut reaction_species_dir = None;
+    let mut window = VecDeque::new();
+    let mut ichunk = 0;
     if options.write_reaction_species {
         if let Some(p) = trjfile.parent() {
             let dir = p.join("reaction-species");
@@ -144,10 +154,13 @@ pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, options: &ReactionO
             ichunk += 1;
         }
     }
-    writer.close()?;
 
-    // NOTE: we ignore the last chunk
-    // process_mol_chunk(window.make_contiguous());
+    // NOTE: ignore the last chunk or not?
+    if window.len() > 2 * noise_event_life + 1 {
+        process_mol_chunk(window.make_contiguous(), &options, reaction_species_dir.as_deref());
+    }
+
+    writer.close()?;
 
     Ok(())
 }

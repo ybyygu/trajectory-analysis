@@ -25,7 +25,7 @@ pub struct ReactionCli {
     verbose: Verbosity,
 
     /// The noise bonding event life for noise removing algorithm.
-    #[clap(short = 'l', default_value = "20")]
+    #[clap(short = 'l', default_value = "50")]
     noise_event_life: usize,
 
     /// The chunk size for processing trajectory frames. Please note,
