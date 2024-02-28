@@ -16,8 +16,9 @@ pub struct ReactionCli {
     /// The trajectory file in xyz format.
     trjfile: PathBuf,
 
-    /// Write reaction species (if eached, these files can be found in
-    /// the same dir as trajectory file).
+    /// Write reaction species (if enabled, these files can be found
+    /// in the same dir as trajectory file. Check directories
+    /// `reaction-species` and `reactive-frames`).
     #[clap(short = 'w')]
     write_reaction_species: bool,
 

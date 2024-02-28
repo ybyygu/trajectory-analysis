@@ -50,18 +50,17 @@ impl ReactionWriter {
 // 6e775d47 ends here
 
 // [[file:../../trajectory.note::7e14952a][7e14952a]]
-use gchemol::prelude::*;
 use gchemol::Molecule;
 
 /// Writes molecule `mol` to file `f`. Creates leading directories if
 /// not exist.
-pub fn write_molecule(f: &Path, mol: &Molecule) -> Result<()> {
+pub fn write_molecules(f: &Path, mols: &[Molecule]) -> Result<()> {
     use std::fs::{self, File};
 
     if let Some(dir_path) = f.parent() {
         fs::create_dir_all(dir_path)?; // Create the directory path if it doesn't exist
     }
-    mol.to_file(f)?;
+    gchemol::io::write(f, mols)?;
 
     Ok(())
 }

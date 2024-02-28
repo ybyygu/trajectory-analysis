@@ -111,7 +111,7 @@ pub fn get_reaction(mol1: &Molecule, mol2: &Molecule, reaction_species_dir: Opti
             for mol in reactants.iter().chain(&products) {
                 let fp = mol.fingerprint();
                 let f = dir.join(format!("{fp}.mol2"));
-                io::write_molecule(&f, &mol)?;
+                io::write_molecules(&f, &[mol.clone()])?;
             }
         }
     }
