@@ -1,7 +1,7 @@
 # [[file:trajectory.note::fa80d52c][fa80d52c]]
 [package]
 name = "trajectory-analysis"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 

@@ -7,6 +7,7 @@ use gchemol::Molecule;
 mod algo;
 mod base;
 mod io;
+mod options;
 
 pub mod cli;
 // 29d234b7 ends here

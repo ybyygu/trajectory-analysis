@@ -1,4 +1,5 @@
 // [[file:../../trajectory.note::d74a391a][d74a391a]]
+use super::options::ReactionOptions;
 use crate::common::*;
 
 use gut::cli::*;
@@ -31,6 +32,11 @@ pub struct ReactionCli {
     /// this value should not be smaller than 2*noise_event_life + 1
     #[clap(short = 'n', default_value = "200")]
     chunk_size: usize,
+
+    /// Read the trajectory stepping by the given amount at each
+    /// frame. A meaningful value should be greater than 1.
+    #[clap(long = "step", default_value = "1")]
+    step_size: usize,
 }
 
 impl ReactionCli {
@@ -48,8 +54,15 @@ impl ReactionCli {
 // [[file:../../trajectory.note::093b2b9c][093b2b9c]]
 fn process(cli: &ReactionCli) -> Result<()> {
     use crate::reaction::algo::find_chemical_reactions_in_trajectory;
+    let options = ReactionOptions {
+        read_trajectory_step_by: cli.step_size,
+        noise_event_life: cli.noise_event_life,
+        write_reaction_species: cli.write_reaction_species,
+        chunk_size: cli.chunk_size,
+        ..Default::default()
+    };
 
-    find_chemical_reactions_in_trajectory(&cli.trjfile, cli.write_reaction_species, cli.noise_event_life, cli.chunk_size)?;
+    find_chemical_reactions_in_trajectory(&cli.trjfile, &options)?;
 
     Ok(())
 }

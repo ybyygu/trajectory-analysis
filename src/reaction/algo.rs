@@ -1,5 +1,7 @@
 // [[file:../../trajectory.note::0ae3c448][0ae3c448]]
 use super::base::BondingStates;
+use super::options::ReactionOptions;
+
 use crate::common::*;
 // 0ae3c448 ends here
 
@@ -98,13 +100,11 @@ fn find_reactions(
 // [[file:../../trajectory.note::2ebc3172][2ebc3172]]
 use super::io::{Reaction, ReactionWriter};
 
-pub fn find_chemical_reactions_in_trajectory(
-    trjfile: &Path,
-    write_reaction_species: bool,
-    noise_event_life: usize,
-    chunk_size: usize,
-) -> Result<()> {
+pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, options: &ReactionOptions) -> Result<()> {
     use std::collections::VecDeque;
+
+    let noise_event_life = options.noise_event_life;
+    let chunk_size = options.chunk_size;
     ensure!(
         chunk_size > 2 * noise_event_life + 1,
         "invalid chunk_size/noise_event_life parameters"
@@ -112,20 +112,17 @@ pub fn find_chemical_reactions_in_trajectory(
 
     let overlap_size = noise_event_life;
 
-    let mut mols = gchemol::io::read(trjfile)?;
+    let step_by = options.read_trajectory_step_by;
+    ensure!(step_by != 0, "invalid read_trajectory_step_by option!");
+    let mut mols = gchemol::io::read(trjfile)?.step_by(step_by);
     let mut window = VecDeque::new();
     let mut ichunk = 0;
     // write reactions in parquet format
-    // let pqfile: PathBuf = if let Some(p) = trjfile.parent() {
-    //     p.join("reaction.pq")
-    // } else {
-    //     "reaction.pq".to_owned()
-    // };
     let pqfile = trjfile.with_file_name("reaction.pq");
     let mut writer = ReactionWriter::new(&pqfile)?;
 
     let mut reaction_species_dir = None;
-    if write_reaction_species {
+    if options.write_reaction_species {
         if let Some(p) = trjfile.parent() {
             let dir = p.join("reaction-species");
             reaction_species_dir = Some(dir);
@@ -138,7 +135,7 @@ pub fn find_chemical_reactions_in_trajectory(
             // Process the current window
             // Create one contiguous slice of `Molecule`
             println!("Processing chunk {ichunk}");
-            let reactions = process_mol_chunk(window.make_contiguous(), reaction_species_dir.as_deref(), noise_event_life)?;
+            let reactions = process_mol_chunk(window.make_contiguous(), &options, reaction_species_dir.as_deref())?;
             writer.write_reactions(&reactions);
             // Prepare for the next window: keep the last `overlap_size` elements
             while window.len() > overlap_size {
@@ -183,9 +180,11 @@ fn get_chemical_reactions(
 /// Create bonds and find chemical reactions in this chunk
 fn process_mol_chunk(
     chunk: &mut [Molecule],
+    options: &ReactionOptions,
     reaction_species_dir: Option<&Path>,
-    noise_event_life: usize,
 ) -> Result<Vec<Reaction>> {
+    let noise_event_life = options.noise_event_life;
+
     chunk.into_par_iter().for_each(|mut mol| {
         // ignore molecules already `rebond` in overlap region
         if mol.nbonds() == 0 {
