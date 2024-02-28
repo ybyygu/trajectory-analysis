@@ -90,14 +90,16 @@ fn find_reactions(
         let mi = &mols[i];
         let mj = &mols[j];
         let mut reaction = super::get_reaction(mi, mj, reaction_species_dir)?;
-        reaction.local_frame = j;
-        reaction.global_frame = mj.title();
-        reactions.push(reaction);
+        let local_frame = j;
+        let global_frame = mj.title();
         // write reactive frames for checking
         if let Some(dir) = reactive_frames_dir {
-            let f = dir.join(format!("{j:03}.mol2"));
+            let f = dir.join(format!("{global_frame}.mol2"));
             super::io::write_molecules(&f, &[mi.clone(), mj.clone()])?;
         }
+        reaction.local_frame = local_frame;
+        reaction.global_frame = global_frame;
+        reactions.push(reaction);
     }
     Ok(reactions)
 }
