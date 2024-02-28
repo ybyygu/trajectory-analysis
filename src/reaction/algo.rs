@@ -125,9 +125,11 @@ pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, options: &ReactionO
     }
     // Set lattice from extxyz title
     let mut mols = gchemol::io::read(trjfile)?.step_by(step_by).map(|mut mol| {
-        if let Some(lat) = gchemol::io::formats::ExtxyzFile::read_lattice(&mol.title()) {
-            debug!("Set lattice from extxyz title");
-            mol.set_lattice(lat);
+        if options.read_lattice_extxyz {
+            if let Some(lat) = gchemol::io::formats::ExtxyzFile::read_lattice(&mol.title()) {
+                debug!("Set lattice from extxyz title");
+                mol.set_lattice(lat);
+            }
         }
         mol
     });

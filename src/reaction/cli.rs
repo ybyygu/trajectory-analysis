@@ -38,6 +38,10 @@ pub struct ReactionCli {
     /// frame. A meaningful value should be greater than 1.
     #[clap(long = "step", default_value = "1")]
     step_size: usize,
+
+    /// Do not read lattice data from xyz title in extxyz format.
+    #[clap(long = "ignore-lattice")]
+    ignore_lattice_extxyz: bool,
 }
 
 impl ReactionCli {
@@ -60,6 +64,7 @@ fn process(cli: &ReactionCli) -> Result<()> {
         noise_event_life: cli.noise_event_life,
         write_reaction_species: cli.write_reaction_species,
         chunk_size: cli.chunk_size,
+        read_lattice_extxyz: !cli.ignore_lattice_extxyz,
         ..Default::default()
     };
 
