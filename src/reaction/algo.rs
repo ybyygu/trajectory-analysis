@@ -153,6 +153,7 @@ pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, options: &ReactionO
         mol.set_title(format!("{i}"));
         window.push_back(mol);
         if window.len() == chunk_size {
+            ichunk += 1;
             // Process the current window
             // Create one contiguous slice of `Molecule`
             println!("Processing chunk {ichunk}");
@@ -162,25 +163,24 @@ pub fn find_chemical_reactions_in_trajectory(trjfile: &Path, options: &ReactionO
                 reaction_species_dir.as_deref(),
                 reactive_frames_dir.as_deref(),
             )?;
-            writer.write_reactions(&reactions);
+            if !reactions.is_empty() {
+                let n = reactions.len();
+                println!("Found {n} reactions in chunk {ichunk}");
+                writer.write_reactions(&reactions);
+            }
             // Prepare for the next window: keep the last `overlap_size` elements
             while window.len() > overlap_size {
                 window.pop_front();
             }
-            ichunk += 1;
         }
     }
 
-    // NOTE: ignore the last chunk or not?
-    if window.len() > 2 * noise_event_life + 1 {
-        process_mol_chunk(
-            window.make_contiguous(),
-            &options,
-            reaction_species_dir.as_deref(),
-            reactive_frames_dir.as_deref(),
-        );
+    // NOTE: ignore the last chunk
+    if !window.is_empty() {
+        println!("The last chunk was discarded for context reason.");
     }
 
+    // close the writer for parquet
     writer.close()?;
 
     Ok(())
@@ -205,7 +205,7 @@ fn get_chemical_reactions(
     let bonds_to_repair = remove_noise_bonding_events(&mut states, noise_event_life);
     let keys: Vec<_> = states.bonding_pairs().collect();
     for &[u, v] in &keys {
-        info!("{u:03}-{v:03}: {}", states.bonding_events_code([u, v]));
+        info!("{u:03}={v:03}: {}", states.bonding_events_code([u, v]));
     }
     repair_bonding_states(&mut mols, &bonds_to_repair);
 
